@@ -2,7 +2,8 @@ cd ~
 mkdir charm-crypto-bootstrap
 cd charm-crypto-bootstrap
 
-sudo apt install libgmp-dev \
+sudo apt install libssl-dev \
+                 libgmp-dev \
                  flex \
                  bison
 
