@@ -1,4 +1,4 @@
 if __name__ == "__main__":
-    from . import main
+    from .frontend import go
 
-    main()
+    go()

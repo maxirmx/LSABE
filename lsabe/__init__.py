@@ -1,2 +1,2 @@
 
-from .lsabe import *
+from .__about__ import *

@@ -3,15 +3,20 @@ import os
 import re
 # https://jhuisi.github.io/charm/cryptographers.html
 from charm.toolbox.pairinggroup import PairingGroup,ZR,G1,G2,GT,pair
+from pathlib import Path
 
 class LSABE():
-    def __init__(self):
+    def __init__(self, msk_path):
+
+# These are file names to load\store MSK and PP
+        self.msk_fname = msk_path.joinpath('lsabe.msk')   
+        self.pp_fname  = msk_path.joinpath('lsabe.pp')   
 # ....
 # [charm crypto] For symmetric pairing G1 == G2  
-        self.group = PairingGroup('SS512')    
+        self.group = PairingGroup('SS512')
+
 
     def SystemInit(self):
-# ....
         f = self.group.random(G1) 
         g = self.group.random(G1)
         alfa, beta, lmbda = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)        
@@ -19,15 +24,22 @@ class LSABE():
         self.MSK = { 'alfa':alfa, 'beta':beta, 'lambda':lmbda }        
         self.PP =  { 'f':f, 'g':g, 'g^beta':g ** beta, 'g^lambda':g ** lmbda, 'e(gg)^alfa':e_gg_alfa}
 
-        self.__serialize__(self.MSK, "/home/maxirmx/key.lsabe")
-        self.__serialize__(self.PP,  "/home/maxirmx/key.lsabe.pub")
+        self.__serialize__MSK()
+        self.__serialize__PP()
 
+    def SystemLoad(self):
         self.__deserialize__MSK("/home/maxirmx/key.lsabe")
         self.__deserialize__PP("/home/maxirmx/key.lsabe.pub")
 
-    def __serialize__(self, dict, filename):
-        file = open(filename, 'wb')
-        for v in dict.values():
+    def __serialize__MSK(self):
+        file = self.msk_fname.open(mode='wb')
+        for v in self.MSK.values():
+            file.write(self.group.serialize(v))
+        file.close
+
+    def __serialize__PP(self):
+        file = self.pp_fname.open(mode='wb')
+        for v in self.PP.values():
             file.write(self.group.serialize(v))
         file.close
 
@@ -48,14 +60,12 @@ class LSABE():
         file.close
         d = re.split('=', data)
 
-        print (self.PP)
         self.PP = {}
         self.PP['f']            = self.group.deserialize(d[0].encode())
         self.PP['g']            = self.group.deserialize(d[1].encode())
         self.PP['g^beta']       = self.group.deserialize(d[2].encode())
         self.PP['g^lambda']     = self.group.deserialize(d[3].encode())
         self.PP['e(gg)^alfa']   = self.group.deserialize(d[4].encode())
-        print (self.PP)
 
     def KeyGen(self):
         t, delta = self.group.random(ZR), self.group.random(ZR)
@@ -69,12 +79,4 @@ class LSABE():
         TK3 = self.PP['g'] ** (z * t)    
         TK5 = (self.PP['g'] ** (z * self.MSK['alfa']) ) * (self.PP['g'] ** (z * self.MSK['beta'] * t))   
         TK = (TK3, TK5)
-        return (SK,TK)
-#
-def main():
-    print('Hello, World!')
-    lsabe = LSABE()
-    lsabe.SystemInit()
-    (SK, TK) = lsabe.KeyGen()
-    
- 
+        return (SK,TK) 
