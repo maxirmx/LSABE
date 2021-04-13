@@ -3,7 +3,7 @@ import argparse
 import pathlib
 
 
-def go():
+def startup():
 
     default_msk_path = pathlib.Path(__file__).parent.parent.joinpath('MSK')
 
@@ -16,13 +16,20 @@ def go():
     parser.add_argument('--init', 
                         dest        =   'init-flag', 
                         action      =   'store_true',
-                        help        =   'Generate MSK and PP. >>> CAUTION! NO CHECKS BEFORE OVERWRIGHT! <<<')
+                        help        =   'Generate MSK and PP files. >>> CAUTION! NO CHECKS BEFORE OVERWRIGHT! <<<')
 
-    parser.add_argument('--encrypt', 
+    parser.add_argument('--encrypt-in', 
                         type        =   pathlib.Path, 
                         dest        =   'file-name', 
                         metavar     =   '<file>',
-                        help        =   'Encrypt file')
+                        help        =   'File to encrypt')
+
+    parser.add_argument('--encrypt-out', 
+                        type        =   pathlib.Path, 
+                        dest        =   'output-name', 
+                        metavar     =   '<folder>',
+                        help        =   'Directory to store encrypted file and keys')
+                    
 
     parser.add_argument('--msk-path',  
                         type        =   pathlib.Path, 

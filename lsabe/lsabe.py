@@ -28,8 +28,8 @@ class LSABE():
         self.__serialize__PP()
 
     def SystemLoad(self):
-        self.__deserialize__MSK("/home/maxirmx/key.lsabe")
-        self.__deserialize__PP("/home/maxirmx/key.lsabe.pub")
+        self.__deserialize__MSK(self.msk_fname)
+        self.__deserialize__PP(self.pp_fname)
 
     def __serialize__MSK(self):
         file = self.msk_fname.open(mode='wb')

@@ -1,4 +1,4 @@
 if __name__ == "__main__":
-    from .frontend import go
+    from .frontend import startup
 
-    go()
+    startup()
