@@ -45,6 +45,7 @@ class build(_build):  # pylint: disable=invalid-name
 #
 
 CUSTOM_COMMANDS = [ 
+# GMP   wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
 # PBC
 #                    ['rm', '-rf', 'pbc-0.5.14'],
 #                    ['wget', 'https://crypto.stanford.edu/pbc/files/pbc-0.5.14.tar.gz'],
@@ -54,12 +55,12 @@ CUSTOM_COMMANDS = [
 #                    ['sh', '-c', 'cd pbc-0.5.14 && make install'],
 #                    ['rm', '-rf', 'pbc-0.5.14'],
 # Charm crypto                     
-                    ['rm', '-rf', 'charm'],
-                    ['git', 'clone', 'https://github.com/JHUISI/charm.git'],
-                    ['sh', '-c', 'cd charm && ./configure.sh'],
-                    ['sh', '-c', 'cd charm && make'],
-                    ['sh', '-c', 'cd charm && make install'],
-                    ['rm', '-rf', 'charm']
+#                    ['rm', '-rf', 'charm'],
+#                    ['git', 'clone', 'https://github.com/JHUISI/charm.git'],
+#                    ['sh', '-c', 'cd charm && ./configure.sh'],
+#                    ['sh', '-c', 'cd charm && make'],
+#                    ['sh', '-c', 'cd charm && make install'],
+#                    ['rm', '-rf', 'charm']
                   ]
 
 class CustomCommands(setuptools.Command):
