@@ -54,12 +54,12 @@ CUSTOM_COMMANDS = [
 #                    ['sh', '-c', 'cd pbc-0.5.14 && make install'],
 #                    ['rm', '-rf', 'pbc-0.5.14'],
 # Charm crypto                     
-                    ['rm', '-rf', 'charm'],
-                    ['git', 'clone', 'https://github.com/JHUISI/charm.git'],
-                    ['sh', '-c', 'cd charm && ./configure.sh'],
-                    ['sh', '-c', 'cd charm && make'],
-                    ['sh', '-c', 'cd charm && make install'],
-                    ['rm', '-rf', 'charm']
+#                    ['rm', '-rf', 'charm'],
+#                    ['git', 'clone', 'https://github.com/JHUISI/charm.git'],
+#                    ['sh', '-c', 'cd charm && ./configure.sh'],
+#                    ['sh', '-c', 'cd charm && make'],
+#                    ['sh', '-c', 'cd charm && make install'],
+#                    ['rm', '-rf', 'charm']
                   ]
 
 class CustomCommands(setuptools.Command):

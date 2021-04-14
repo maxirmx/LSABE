@@ -59,7 +59,7 @@ def arguments_setup():
                         dest        =   'sec_attr',
                         metavar     =   '<security attribute>',
                         default     =   [],
-                        help        =   'Security attribute. Multiply attributes are supported, i.e.: --sec-attr foo bar foobar' 
+                        help        =   'Security attribute. Multiply attributes are supported, e.g.: --sec-attr foo bar foobar' 
     )
 
     parser.add_argument('--kwd',  
@@ -67,13 +67,22 @@ def arguments_setup():
                         dest        =   'keywords',
                         metavar     =   '<keywords>',
                         default     =   [],
-                        help        =   'Keyword. Multiply keywords are supported, i.e.: --kwd searchable encryption algorithm' 
+                        help        =   'Keyword. Multiply keywords are supported, e.g.: --kwd searchable encryption algorithm' 
     )
 
     parser.add_argument('--msg',  
                         dest        =   'message',
                         metavar     =   '<message>',
-                        help        =   'A message to encrypt.' 
+                        help        =   'A message to encrypt. Quotes are welcome, e.g.: --msg "Searchable encryption is good."' 
+    )
+
+    parser.add_argument('--policy',  
+                        nargs       =   '+',     
+                        type        =   int,
+                        dest        =   'policy',
+                        metavar     =   '<policy>',
+                        help        =   ' ... be the function that associates rows of A with the attributes ...' + 
+                                        ' Whatever it means please provide integers in the amount of <number of attributes> * <number of keywords>."' 
     )
 
     return parser

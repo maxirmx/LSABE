@@ -9,7 +9,9 @@
             "type": "python",
             "request": "launch",
             "module": "lsabe",
-            "args":["--keygen", "--encrypt", "--kwd", "searchable", "encryption", "algorithm", "--sec-attr", "foo", "bar", "foobar", "--msg", "\"searchable encryption algorithm is good\""],
+            "args":["--keygen", "--encrypt", "--kwd", "searchable", "encryption", "algorithm", 
+                    "--sec-attr", "foo", "bar", "--msg", "searchable encryption algorithm is good",
+                    "--policy", "1", "2", "3", "4", "5", "6"]
         }
     ]
 }
