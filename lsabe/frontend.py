@@ -1,62 +1,47 @@
-from .lsabe import LSABE
 import argparse
 import pathlib
+from .arguments import arguments_setup, dir_create
+from .lsabe import LSABE
 
 
 def startup():
 
-    default_msk_path = pathlib.Path(__file__).parent.parent.joinpath('MSK')
-
-    parser = argparse.ArgumentParser(
-        description             =   'LSABE algorithm', 
-        prog                    =   'lsabe',
-        fromfile_prefix_chars   =   '@'
-    )
-
-    parser.add_argument('--init', 
-                        dest        =   'init-flag', 
-                        action      =   'store_true',
-                        help        =   'Generate MSK and PP files. >>> CAUTION! NO CHECKS BEFORE OVERWRIGHT! <<<')
-
-    parser.add_argument('--encrypt-in', 
-                        type        =   pathlib.Path, 
-                        dest        =   'file-name', 
-                        metavar     =   '<file>',
-                        help        =   'File to encrypt')
-
-    parser.add_argument('--encrypt-out', 
-                        type        =   pathlib.Path, 
-                        dest        =   'output-name', 
-                        metavar     =   '<folder>',
-                        help        =   'Directory to store encrypted file and keys')
-                    
-
-    parser.add_argument('--msk-path',  
-                        type        =   pathlib.Path, 
-                        dest        =   'msk_path',
-                        metavar     =   '<path>',
-                        default     =   default_msk_path,
-                        help        =   'Directory to load or store MSK (lsabe.msk) and PP (lsabe.pp). ' + 
-                                        'At this sytem it will default to ' + str(default_msk_path)
-    )
-
+    parser = arguments_setup()
     args = parser.parse_args()
 
-   # ...
-   # Now we will check consistency of the arguments
-   # Path for master key store:
-    msk_path = args.msk_path
-    try:
-        msk_path.mkdir(mode=0o777, parents=True, exist_ok=True)
-    except:
-        if msk_path.Exists() and not msk_path.is_dir():
-            print(str(msk_path) + ' exists and is not a directory')
-        else:
-            print('Could not create ' + str(msk_path))
+    if (not args.init_flag and not args.encrypt_flag):
+        print('Nothing to do. Specify either --init or --encrypt. To get help please run lsabe --help.')
         print('Exiting ...')
         exit(-1)
 
+    msk_path = args.msk_path
+    dir_create(msk_path);
+
     lsabe = LSABE(msk_path)
-    lsabe.SystemInit()
-    (SK, TK) = lsabe.KeyGen()
-    
+
+    if args.init_flag:
+        if not lsabe.SystemInit():
+            print('Failed to store MSK and PP to ' + str(msk_path))
+            print('Exiting ...')
+            exit(-1)
+    else:
+        if not lsabe.SystemLoad():
+            print('Failed to load MSK and PP from ' + str(msk_path))
+            print('Exiting ...')
+            exit(-1)
+
+    if (args.encrypt_flag):
+        out_path = args.out_path
+        dir_create(out_path)
+        sk_fname = out_path.joinpath('lsabe.sk')   
+
+        SK = lsabe.KeyGen(args.sec_attr)
+#  (to remove)   print (SK)
+        try:
+            lsabe.serialize__SK(SK, sk_fname)
+        except:
+            print('Failed to store SK to ' + str(sk_fname))
+            print('Exiting ...')
+            exit(-1)
+#  (to remove)  SK = lsabe.deserialize__SK(sk_fname)
+#  (to remove)   print (SK)
