@@ -2,9 +2,10 @@
 import os
 import re
 # https://jhuisi.github.io/charm/cryptographers.html
-from charm.toolbox.pairinggroup import PairingGroup,ZR,G1,G2,GT,pair
+from charm.toolbox.pairinggroup import PairingGroup,ZR,G1,GT,pair,extract_key
 from pathlib import Path
 from .formuleDeViete import formuleDeViete
+from .symcrypto import SymmetricCryptoAbstraction
 
 class LSABE():
     def __init__(self, msk_path):
@@ -120,8 +121,12 @@ class LSABE():
         return (K1, K2, K3, K4, K5) 
 
 # .... Keyword index
-    def IndexGen(self, SK, KW):
-        (K1, K2, K3, K4, K5) = SK
+    def EncryptAndIndexGen(self, M, KW, rho):
+
+        UpsilonWithHook = self.group.random(GT)
+        kse = extract_key(UpsilonWithHook)
+        a   = SymmetricCryptoAbstraction(kse)
+        CM = a.lsabe_encrypt(bytes(M, "utf-8"))
 
         hkw = []
         for kw in KW:
@@ -132,8 +137,6 @@ class LSABE():
 # We have P(x)=1, so eta[0] is adjusted
         eta[0] = eta[0] - 1
 
-        UpsilonWithHook = self.group.random(GT)
-
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
 
         I = UpsilonWithHook * pair(self.PP['g'], self.PP['g']) ** (self.MSK['alfa']*s)
@@ -143,15 +146,61 @@ class LSABE():
         I4 = self.PP['g'] ** rho1
 
         I5 = []
-        I6 = []
+        for i in range(0, len(rho)):
+            I5.append((self.PP['g'] ** (self.MSK['beta']*self.MSK['lambda'])*(i+1)) * self.group.hash(rho[i], G1) ** (-rho1))
 
+        I6 = []
         for eta_j in eta:
             I6.append(rho1 * (eta_j ** (-1)))
 
-        return (I, I1, I2, I3, I4, I5, I6)
+        E = (pair(self.PP['g'], self.PP['f']) ** rho1) * (pair(self.PP['g'],self.PP['g']) ** (self.MSK['alfa'] * b * rho1))
 
-    def serialize__I(self, I, td_fname):
-        hkw = []
+        return (I, I1, I2, I3, I4, I5, I6, E, CM)
+
+    def serialize__I(self, I, i_fname):
+        (I, I1, I2, I3, I4, I5, I6, E, CM) = I
+        file = open(i_fname, mode='wb')
+        file.write(self.group.serialize(I))
+        file.write(self.group.serialize(I1))
+        file.write(self.group.serialize(I2))
+        file.write(self.group.serialize(I3))
+        file.write(self.group.serialize(I4))
+
+        file.write(b'%(len)04d=' %{b"len":  len(I5)} )
+        for t in I5:
+            file.write(self.group.serialize(t))
+
+        file.write(b'%(len)04d=' %{b"len":  len(I6)} )
+        for t in I6:
+            file.write(self.group.serialize(t))
+
+        file.write(self.group.serialize(E))
+        file.write(bytes(CM, "utf-8"))
+
+    def deserialize__I(self, i_fname):
+        file = open(i_fname, 'r')
+        data = file.read()
+        file.close
+        d = re.split('=', data)
+        I  = self.group.deserialize(d[0].encode())
+        I1  = self.group.deserialize(d[1].encode())
+        I2  = self.group.deserialize(d[2].encode())
+        I3  = self.group.deserialize(d[3].encode())
+        I4  = self.group.deserialize(d[4].encode())
+        sz5 = d[5]
+        I5 = []
+        for i in range(0, int(sz5)):
+            I5.append(self.group.deserialize(d[6+i].encode()))
+
+        sz6 = d[6+int(sz5)]
+        I6 = []
+        for i in range(0, int(sz6)):
+            I6.append(self.group.deserialize(d[7+int(sz5)+i].encode()))
+
+        E  = self.group.deserialize(d[7+int(sz5)+int(sz6)].encode())
+        CM = d[8+int(sz5)+int(sz6)]
+
+        return (I, I1, I2, I3, I4, I5, I6, E, CM)
 
 # .... Trapdoor
 

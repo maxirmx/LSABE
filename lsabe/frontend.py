@@ -44,7 +44,11 @@ def startup():
 
     if (args.encrypt_flag):
         if len(args.keywords) == 0:
-            print('Index generation without keywords does not make enough sense')
+            print('--encrypt flag is set but no keywords are supplied. Index generation without keywords won\'t make enough sense')
+            print('Exiting ...')
+            exit(-1)
+        if args.message is None or not args.message:
+            print('--encrypt flag is set but no message to encrypt is supplied')
             print('Exiting ...')
             exit(-1)
         try:
@@ -55,15 +59,17 @@ def startup():
             print('Exiting ...')
             exit(-1)
 
-        i_fname = out_path.joinpath('lsabe.index')   
-        I = lsabe.IndexGen(SK, args.keywords)
+        c_fname = out_path.joinpath('lsabe.ciphertext')   
+        I = lsabe.EncryptAndIndexGen( args.message, args.keywords, [[1],[2],[3]] )
         print (I)
         try:
-            lsabe.serialize__I(I, i_fname)
+           lsabe.serialize__I(I, c_fname)
         except:
-            print('Failed to store keyword index to ' + str(i_fname))
-            print('Exiting ...')
-            exit(-1)
+           print('Failed to store ciphertext to ' + str(c_fname))
+           print('Exiting ...')
+           exit(-1)
+        I = lsabe.deserialize__I(c_fname)
+        print (I)
 
     if (args.trapgen_flag):
         if len(args.keywords) == 0:

@@ -7,12 +7,11 @@ def formuleDeViete(roots):
     coeff[n] = 1
     for i in range(1, n + 1):
         for j in range(n - i - 1, n):
-            coeff[j] += ((-1) * roots[i - 1] * coeff[j + 1])
-      
+            coeff[j] += ((-1) * roots[i - 1] * coeff[j + 1])  
     
- #   print("Polynomial Coefficients : ", end = "")
- #   for i in coeff: 
- #       print(i, end = " ")
- #   print()
+#    print("Polynomial Coefficients : ", end = "")
+#    for i in coeff: 
+#        print(i, end = " ")
+#    print()
 
     return coeff
