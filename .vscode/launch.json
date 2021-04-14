@@ -9,7 +9,7 @@
             "type": "python",
             "request": "launch",
             "module": "lsabe",
-            "args":["--encrypt", "--sec-attr", "foo", "--sec-attr", "bar"],
+            "args":["--encrypt", "--kwd", "foo", "--kwd", "bar"],
         }
     ]
 }

@@ -27,10 +27,22 @@ def arguments_setup():
                                         'At this sytem it will default to ' + str(default_msk_path)
     )
 
+    parser.add_argument('--keygen', 
+                        dest        =   'keygen_flag', 
+                        action      =   'store_true',
+                        help        =   'Generate secret key (CAUTION! NO CHECKS BEFORE OVERWRITE!)'
+    )
+
     parser.add_argument('--encrypt', 
                         dest        =   'encrypt_flag', 
                         action      =   'store_true',
-                        help        =   'Generate secret key, keyword index, trapdoor (CAUTION! NO CHECKS BEFORE OVERWRITE!)'
+                        help        =   'Generate keyword index (CAUTION! NO CHECKS BEFORE OVERWRITE!)'
+    )
+
+    parser.add_argument('--trapgen', 
+                        dest        =   'trapgen_flag', 
+                        action      =   'store_true',
+                        help        =   'Generate  trapdoor (CAUTION! NO CHECKS BEFORE OVERWRITE!)'
     )
 
     parser.add_argument('--out-path',  
@@ -46,6 +58,7 @@ def arguments_setup():
                         action      =   'append',     
                         dest        =   'sec_attr',
                         metavar     =   '<security attribute>',
+                        default     =   [],
                         help        =   'Security attribute. Multiply attributes are supported, i.e.: --sec-attr foo  --sec-attr bar --sec-attr third' 
     )
 
@@ -53,6 +66,7 @@ def arguments_setup():
                         action      =   'append',     
                         dest        =   'keywords',
                         metavar     =   '<keywords>',
+                        default     =   [],
                         help        =   'Keyword. Multiply keywords are supported, i.e.: --kwd searchable  --kwd encryption --sec-attr algorithm' 
     )
 
