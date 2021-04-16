@@ -23,13 +23,21 @@ def startup():
     lsabe = LSABE(msk_path)
 
     if args.init_flag:
-        if not lsabe.SystemInit():
-            print('Failed to store MSK and PP to ' + str(msk_path))
+        print('Creating master security key (MSK) and public properies (PP) ...')
+        try:
+            lsabe.SystemInit()
+        except:
+            print('Failed to store MSK and PP to ' + lsabe.msk_fname +' and ' + lsabe.pp_fname)
             farewell()
+        print('MSK and PP saved to ' + lsabe.msk_fname +' and ' + lsabe.pp_fname)
     else:
-        if not lsabe.SystemLoad():
-            print('Failed to load MSK and PP from ' + str(msk_path))
+        print('Loading Creating master security key (MSK) and public properies (PP) from ' + lsabe.msk_fname +' and ' + lsabe.pp_fname)
+        try:
+            lsabe.SystemLoad()
+        except:
+            print('Failed to load MSK and PP')
             farewell()
+        print('MSK and PP loaded succesfully')
 
     out_path = args.out_path
     dir_create(out_path)
