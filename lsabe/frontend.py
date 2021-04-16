@@ -1,62 +1,117 @@
-from .lsabe import LSABE
 import argparse
 import pathlib
+from .arguments import arguments_setup, dir_create
+from .lsabe import LSABE
+
+def farewell():
+        print('Exiting ... To get help please run python -m lsabe --help.')
+        exit(-1)
 
 
 def startup():
 
-    default_msk_path = pathlib.Path(__file__).parent.parent.joinpath('MSK')
-
-    parser = argparse.ArgumentParser(
-        description             =   'LSABE algorithm', 
-        prog                    =   'lsabe',
-        fromfile_prefix_chars   =   '@'
-    )
-
-    parser.add_argument('--init', 
-                        dest        =   'init-flag', 
-                        action      =   'store_true',
-                        help        =   'Generate MSK and PP files. >>> CAUTION! NO CHECKS BEFORE OVERWRIGHT! <<<')
-
-    parser.add_argument('--encrypt-in', 
-                        type        =   pathlib.Path, 
-                        dest        =   'file-name', 
-                        metavar     =   '<file>',
-                        help        =   'File to encrypt')
-
-    parser.add_argument('--encrypt-out', 
-                        type        =   pathlib.Path, 
-                        dest        =   'output-name', 
-                        metavar     =   '<folder>',
-                        help        =   'Directory to store encrypted file and keys')
-                    
-
-    parser.add_argument('--msk-path',  
-                        type        =   pathlib.Path, 
-                        dest        =   'msk_path',
-                        metavar     =   '<path>',
-                        default     =   default_msk_path,
-                        help        =   'Directory to load or store MSK (lsabe.msk) and PP (lsabe.pp). ' + 
-                                        'At this sytem it will default to ' + str(default_msk_path)
-    )
-
+    parser = arguments_setup()
     args = parser.parse_args()
 
-   # ...
-   # Now we will check consistency of the arguments
-   # Path for master key store:
+    if (not args.init_flag and not args.keygen_flag and not args.encrypt_flag and not args.trapgen_flag):
+        print('Nothing to do. Specify either --init or --keygen or --encrypt or --trapgen.')
+        farewell()
+
     msk_path = args.msk_path
-    try:
-        msk_path.mkdir(mode=0o777, parents=True, exist_ok=True)
-    except:
-        if msk_path.Exists() and not msk_path.is_dir():
-            print(str(msk_path) + ' exists and is not a directory')
-        else:
-            print('Could not create ' + str(msk_path))
-        print('Exiting ...')
-        exit(-1)
+    dir_create(msk_path)
 
     lsabe = LSABE(msk_path)
-    lsabe.SystemInit()
-    (SK, TK) = lsabe.KeyGen()
-    
+
+    if args.init_flag:
+        print ("Generating LSABE Master Secret Key (MSK) and Public Properties (PP) ...")
+        try:
+            lsabe.SystemInit()
+            print("MSK and PP stored to " + lsabe.msk_fname + " and " + lsabe.pp_fname)
+        except:
+            print('Failed to store MSK and PP to ' + lsabe.msk_fname + ' and ' + lsabe.pp_fname)
+            farewell()
+    else:
+        print ("Loading LSABE Master Secret Key (MSK) and Public Parameters (PP) from " + lsabe.msk_fname + " and " + lsabe.pp_fname)
+        try:
+            lsabe.SystemLoad()
+            print ("LSABE MSK and PP have been loaded")
+        except:
+            print('Failed to load MSK and PP from ' + lsabe.msk_fname + ' and ' + lsabe.pp_fname)
+            farewell()
+
+    out_path = args.out_path
+    dir_create(out_path)
+    if (args.keygen_flag):
+        sk_fname = out_path.joinpath('lsabe.sk')   
+        SK = lsabe.SecrekeyGen(args.sec_attr)
+        try:
+            lsabe.serialize__SK(SK, sk_fname)
+        except:
+            print('Failed to store SK to ' + str(sk_fname))
+            farewell()
+
+    if (args.encrypt_flag):
+        if len(args.keywords) == 0:
+            print('--encrypt flag is set but no keywords are supplied. Index generation without keywords won\'t make enough sense')
+            farewell()
+        if args.message is None or not args.message:
+            print('--encrypt flag is set but no message to encrypt is supplied')
+            farewell()
+        try:
+            sk_fname = out_path.joinpath('lsabe.sk')   
+            SK = lsabe.deserialize__SK(sk_fname)
+        except:
+            print('Failed to load SK from ' + str(sk_fname))
+            farewell()
+
+        l1 = len(args.keywords)
+        (K1, K2, K3, K4, K5) = SK
+        n = len(K4)
+
+        if args.policy is None:
+            np = 0
+        else:
+            np = len(args.policy)
+
+        if np != l1*n:
+            print('Kindly provide policy as integers in the amount of <number of attributes> * <number of keywords>')
+            print('This time I got ' + str(l1) + ' keywords, ' + str(n) +' attributes, but ' + str(np) + ' policy entries')
+            print('--policy 1,2,3,4,5 ... will be good enouph at this stage')
+            farewell()
+
+        p = []
+        for i in range(0, l1):
+            r = []
+            for j in range(0, n):
+                v = args.policy[i*n+j]
+                r.append(v)
+            p.append(r)
+
+        c_fname = out_path.joinpath('lsabe.ciphertext')   
+        I = lsabe.EncryptAndIndexGen( args.message, args.keywords, p )
+        print(I)
+        try:
+           lsabe.serialize__I(I, c_fname)
+        except:
+           print('Failed to store ciphertext to ' + str(c_fname))
+           farewell()
+
+    if (args.trapgen_flag):
+        if len(args.keywords) == 0:
+           print('Trapdoor generation without keywords does not make enough sense')
+           farewell()
+        try:
+           sk_fname = out_path.joinpath('lsabe.sk')   
+           SK = lsabe.deserialize__SK(sk_fname)
+        except:
+           print('Failed to load SK from ' + str(sk_fname))
+           farewell()
+
+        td_fname = out_path.joinpath('lsabe.trapdoor')   
+        TD = lsabe.TrapdoorGen(SK, args.keywords)
+        try:
+            lsabe.serialize__TD(TD, td_fname)
+        except:
+            print('Failed to store trapdoor to ' + str(td_fname))
+            farewell()
+
