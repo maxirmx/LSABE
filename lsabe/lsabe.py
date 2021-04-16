@@ -40,11 +40,15 @@ class LSABE():
         self.__deserialize__MSK()
         self.__deserialize__PP()
 
+    def __serialize_to_file(self, file, x):
+        file.write(self.group.serialize(x))
+
     def __serialize__MSK(self):
         file = self._msk_fname.open(mode='wb')
-        for v in self.MSK.values():
-            file.write(self.group.serialize(v))
-        file.close
+        map(lambda file, x : file.write(self.group.serialize(x)), self.MSK)
+#        for v in self.MSK.values():
+#            file.write(self.group.serialize(v))
+#        file.close
 
 
     def __serialize__PP(self):
