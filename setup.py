@@ -45,6 +45,7 @@ class build(_build):  # pylint: disable=invalid-name
 #
 
 CUSTOM_COMMANDS = [ 
+# GMP   wget https://gmplib.org/download/gmp/gmp-6.2.1.tar.lz
 # PBC
 #                    ['rm', '-rf', 'pbc-0.5.14'],
 #                    ['wget', 'https://crypto.stanford.edu/pbc/files/pbc-0.5.14.tar.gz'],
