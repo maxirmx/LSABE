@@ -23,12 +23,20 @@ def startup():
     lsabe = LSABE(msk_path)
 
     if args.init_flag:
-        if not lsabe.SystemInit():
-            print('Failed to store MSK and PP to ' + str(msk_path))
+        print ("Generating LSABE Master Secret Key (MSK) and Public Properties (PP) ...")
+        try:
+            lsabe.SystemInit()
+            print("MSK and PP stored to " + lsabe.msk_fname + " and " + lsabe.pp_fname)
+        except:
+            print('Failed to store MSK and PP to ' + lsabe.msk_fname + ' and ' + lsabe.pp_fname)
             farewell()
     else:
-        if not lsabe.SystemLoad():
-            print('Failed to load MSK and PP from ' + str(msk_path))
+        print ("Loading LSABE Master Secret Key (MSK) and Public Parameters (PP) from " + lsabe.msk_fname + " and " + lsabe.pp_fname)
+        try:
+            lsabe.SystemLoad()
+            print ("LSABE MSK and PP have been loaded")
+        except:
+            print('Failed to load MSK and PP from ' + lsabe.msk_fname + ' and ' + lsabe.pp_fname)
             farewell()
 
     out_path = args.out_path
