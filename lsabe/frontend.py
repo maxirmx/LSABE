@@ -1,5 +1,6 @@
 import argparse
 import pathlib
+import functools
 from .arguments import arguments_setup, dir_create
 from .lsabe import LSABE
 
@@ -22,8 +23,10 @@ def startup():
 
     lsabe = LSABE(msk_path)
 
+# MSK and PP are requied always
+# So we either generate them (SystemInit) or load from files (SystemLoad)
     if args.init_flag:
-        print('Creating master security key (MSK) and public properies (PP) ...')
+        print('Executing "Setup(κ) → (MSK,PP)" ...')
         try:
             lsabe.SystemInit()
         except:
@@ -31,7 +34,7 @@ def startup():
             farewell()
         print('MSK and PP saved to ' + lsabe.msk_fname +' and ' + lsabe.pp_fname)
     else:
-        print('Loading Creating master security key (MSK) and public properies (PP) from ' + lsabe.msk_fname +' and ' + lsabe.pp_fname)
+        print('Loading master security key (MSK) and public properies (PP) from ' + lsabe.msk_fname +' and ' + lsabe.pp_fname)
         try:
             lsabe.SystemLoad()
         except:
@@ -41,42 +44,69 @@ def startup():
 
     out_path = args.out_path
     dir_create(out_path)
+
+# SK and TK generation
     if (args.keygen_flag):
+        print('Executing "SecretKeyGen(MSK,S,PP) → SK" ...')
+        if len(args.sec_attr) == 0:
+            print(  '--keygen flag is set but no security attributes are supplied.\n'
+                    'Secret key generation algorithm is defined as SecretKeyGen(MSK,S,PP) → SK, where S is a set of security attributes.\n'
+                    'Please provide at least one attribute. --sec-attr attr will be good enouph')
+            farewell()
         sk_fname = out_path.joinpath('lsabe.sk')   
-        SK = lsabe.SecrekeyGen(args.sec_attr)
+        SK = lsabe.SecretKeyGen(args.sec_attr)
         try:
             lsabe.serialize__SK(SK, sk_fname)
         except:
             print('Failed to store SK to ' + str(sk_fname))
             farewell()
+        print('SK saved to ' + str(sk_fname))
 
+        print('Executing "TransKeyGen(SK,z) → TK" ...')
+        TK = lsabe.TransKeyGen(SK)
+        tk_fname = out_path.joinpath('lsabe.tk')   
+        try:
+            lsabe.serialize__TK(TK, tk_fname)
+        except:
+            print('Failed to store TK to ' + str(tk_fname))
+            farewell()
+        print('TK saved to ' + str(tk_fname))
+
+# Encrypt (file encryption and index generation)
     if (args.encrypt_flag):
-        if len(args.keywords) == 0:
-            print('--encrypt flag is set but no keywords are supplied. Index generation without keywords won\'t make enough sense')
+        print('Executing Encrypt(M,KW,(A,ρ),PP) → CT ...')
+        l1 = len(args.keywords)
+        if l1 == 0:
+            print('--encrypt flag is set but no keywords are supplied.\n'
+                    'Encryption algorithm is defined as Encrypt(M,KW,(A,ρ),PP) → CT, where KW is a set of keywords.\n'
+                    'Please provide at least one keyword. --kwd keyword will be good enouph')
             farewell()
         if args.message is None or not args.message:
-            print('--encrypt flag is set but no message to encrypt is supplied')
+            print('--encrypt flag is set but no message to encrypt is supplied.\n'
+                    'Encryption algorithm is defined as Encrypt(M,KW,(A,ρ),PP) → CT, where M is a message to encrypt.\n'
+                    'Please provide it, using quotes if there is more then one word. --msg "A message" will be good enouph')
             farewell()
         try:
             sk_fname = out_path.joinpath('lsabe.sk')   
-            SK = lsabe.deserialize__SK(sk_fname)
+#            SK = lsabe.deserialize__SK(sk_fname)
         except:
             print('Failed to load SK from ' + str(sk_fname))
             farewell()
+        print('SK loaded from ' + str(sk_fname))
 
-        l1 = len(args.keywords)
         (K1, K2, K3, K4, K5) = SK
         n = len(K4)
 
-        if args.policy is None:
-            np = 0
-        else:
-            np = len(args.policy)
+        np = len(args.policy)
 
         if np != l1*n:
-            print('Kindly provide policy as integers in the amount of <number of attributes> * <number of keywords>')
-            print('This time I got ' + str(l1) + ' keywords, ' + str(n) +' attributes, but ' + str(np) + ' policy entries')
-            print('--policy 1,2,3,4,5 ... will be good enouph at this stage')
+            print('Wrong number of access policy entries.\n'
+                  'Encryption algorithm is defined as Encrypt(M,KW,(A,ρ),PP) → CT, where (A,ρ) an access policy mapping security attributes to keywords.\n'
+                  'Input was ' + str(l1) + ' keywords, ' + str(n) +' attributes at SK(' + str(sk_fname) +'), but ' + str(np) + ' policy entries.\n'
+                  'Please provide policy as a list of integers in the amount of <number of attributes> * <number of keywords> = ' + str(l1*n) +'.')
+            
+            helper = functools.reduce(lambda h, x: h + str(x+1) + ' ', range(l1*n), '')      
+            print('--policy ' + helper + 'will be good enouph')
             farewell()
 
         p = []
@@ -88,24 +118,27 @@ def startup():
             p.append(r)
 
         c_fname = out_path.joinpath('lsabe.ciphertext')   
-        I = lsabe.EncryptAndIndexGen( args.message, args.keywords, p )
-        print(I)
+        CT = lsabe.EncryptAndIndexGen( args.message, args.keywords, p )
         try:
-           lsabe.serialize__I(I, c_fname)
+           lsabe.serialize__CT(CT, c_fname)
         except:
            print('Failed to store ciphertext to ' + str(c_fname))
            farewell()
 
     if (args.trapgen_flag):
+        print('Executing Trapdoor(SK,KW′,PP) → TKW′ ...')
         if len(args.keywords) == 0:
-           print('Trapdoor generation without keywords does not make enough sense')
-           farewell()
+            print('--trapgen flag is set but no keywords are supplied.\n'
+                    'Trapdoorgeneration algorithm is defined as Trapdoor(SK,KW′,PP) → TKW′, where KW′ is a set of keywords.\n'
+                    'Please provide at least one keyword. --kwd keyword will be good enouph')
+            farewell()
         try:
            sk_fname = out_path.joinpath('lsabe.sk')   
-           SK = lsabe.deserialize__SK(sk_fname)
+#           SK = lsabe.deserialize__SK(sk_fname)
         except:
            print('Failed to load SK from ' + str(sk_fname))
            farewell()
+        print('SK loaded from ' + str(sk_fname))
 
         td_fname = out_path.joinpath('lsabe.trapdoor')   
         TD = lsabe.TrapdoorGen(SK, args.keywords)
@@ -114,4 +147,7 @@ def startup():
         except:
             print('Failed to store trapdoor to ' + str(td_fname))
             farewell()
+
+#        CT=lsabe.deserialize__CT(out_path.joinpath('lsabe.ciphertext'))
+        lsabe.Search(CT, TD)
 

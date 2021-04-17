@@ -79,6 +79,7 @@ def arguments_setup():
     parser.add_argument('--policy',  
                         nargs       =   '+',     
                         type        =   int,
+                        default     =   [],
                         dest        =   'policy',
                         metavar     =   '<policy>',
                         help        =   ' ... be the function that associates rows of A with the attributes ...' + 
