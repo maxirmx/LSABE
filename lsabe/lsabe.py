@@ -2,7 +2,7 @@ import os
 # https://jhuisi.github.io/charm/cryptographers.html
 from charm.toolbox.pairinggroup import PairingGroup,ZR,G1,G2,GT,pair,extract_key
 from pathlib import Path
-from .formuleDeViete import formuleDeViete
+from .formuleDeViete import formuleDeViete, polyVal
 from .symcrypto import SymmetricCryptoAbstraction
 from .serializer import SER, DES
 
@@ -174,14 +174,20 @@ class LSABE():
             hkw.append(self.group.hash(kw, ZR))
         
         eta = formuleDeViete(hkw)
+
 # Formule de Viete assumes P(x)=0
 # We have P(x)=1, so eta[0] is adjusted
-        eta[0] = eta[0] - 1
+        eta[0] = eta[0] + 1
+
+# .....
+# Check that polynomial coefficients are correct
+#        for hkwi in hkw:
+#            print ('P(' + str(hkwi) + ') = ' + str(polyVal(eta, hkwi)) + ' ~~~~ expected 1')
 
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
 
 # !!!!!!!!!!!!
-#        rho1 = 1        
+        #rho1 = 1        
 
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
@@ -220,12 +226,12 @@ class LSABE():
 
 # .... Trapdoor
 
-    def TrapdoorGen(self, SK, KW):
+    def TrapdoorGen(self, SK, KW, nKW):
         (K1, K2, K3, K4, K5) = SK
         u, rho2 = self.group.random(ZR), self.group.random(ZR)
 
 # !!!!!!!!!!!!
-#        rho2 = 1        
+        #rho2 = 1        
 
 
         T1 = K1 ** u
@@ -234,15 +240,17 @@ class LSABE():
         T4 = pair(self._PP['g'], self._PP['f']) ** u
         T5 = []
 
-        for j in range(1, len(K4) + 1):
+        for j in range(0, nKW+1):
             T5j = 0
             for kw in KW:
                 T5j = T5j + self.group.hash(kw, ZR) ** j
-            T5j = (rho2 ** (-1)) * T5j 
+                print (str(j) + ' ... ' + str(kw) + ' ... ' + str(T5j))
+            #T5j = (rho2 ** (-1)) * T5j 
+            T5j = T5j /rho2
             T5.append(T5j)
 
-#        print ("Trapdoor:")
-#        print ((T1, T2, T3, T4, T5))
+        print ("Trapdoor:")
+        print ((T1, T2, T3, T4, T5))
 
         return (T1, T2, T3, T4, T5)
             
@@ -274,6 +282,14 @@ class LSABE():
 
         tj = I6[0]*T5[0]
         for j in range(1, len(T5)):
-            tj = tj+ I6[j]*T5[j]
-        tj = E ** (T3 * tj)
+            tj = tj + I6[1]*T5[1]
+            print(str(j) + ' ... ' + str(tj) )
+
+
+        tj = E ** (T3 * tj )
         print (tj)
+
+        if t == tj:
+            print('OK')
+        else:
+            print('Nay')

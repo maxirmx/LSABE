@@ -10,8 +10,11 @@
             "request": "launch",
             "module": "lsabe",
             "args":["--keygen", "--encrypt", "--kwd", "searchable", 
-                    "--sec-attr", "foo", "bar", "--msg", "searchable encryption algorithm is good",
-                    "--policy", "1", "2",
+                // "encryption", "protocol", 
+                    "--sec-attr", "foo", "--msg", "searchable encryption algorithm is good",
+                    "--policy", "1", 
+                // "2", "3", 
+                // "4", "5", "6", 
                     "--trapgen"]
 //           "args" : ["--init"]  
 //            "args": ["--keygen",  "--sec-attr", "attr-1", "attr-2"]

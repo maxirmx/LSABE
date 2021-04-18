@@ -1,10 +1,8 @@
-# LSABE helper classes
-# SER - serializer 
-# DES - deserializer
+# .... LSABE helper classes ...
 
 import re
 
-
+# .... SER - serializer .... 
 class SER():
     def __init__(self, fname, group):
         self.__file =fname.open(mode='wb')
@@ -27,6 +25,7 @@ class SER():
         self.__file.write(bytes(M, "utf-8"))
         return self
 
+# .... DES - deserializer ...
 class DES():
     def __init__(self, fname, group):
         file =fname.open(mode='r')

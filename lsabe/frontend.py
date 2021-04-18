@@ -141,7 +141,7 @@ def startup():
         print('SK loaded from ' + str(sk_fname))
 
         td_fname = out_path.joinpath('lsabe.trapdoor')   
-        TD = lsabe.TrapdoorGen(SK, args.keywords)
+        TD = lsabe.TrapdoorGen(SK, args.keywords, len(args.keywords)) # <--- !!!
         try:
             lsabe.serialize__TD(TD, td_fname)
         except:
