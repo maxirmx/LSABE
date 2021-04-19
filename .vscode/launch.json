@@ -9,11 +9,11 @@
             "type": "python",
             "request": "launch",
             "module": "lsabe",
-            "args":["--keygen", "--encrypt", "--kwd", "searchable", 
-                // "encryption", "protocol", 
+            "args":["--keygen", "--encrypt", "--kwd", "searchable", "halo",
+                // "encryption",  "protocol",
                     "--sec-attr", "foo", "--msg", "searchable encryption algorithm is good",
-                    "--policy", "1", 
-                // "2", "3", 
+                    "--policy", "1", "2",
+                    //"2", "3", 
                 // "4", "5", "6", 
                     "--trapgen"]
 //           "args" : ["--init"]  

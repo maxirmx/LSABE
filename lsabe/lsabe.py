@@ -187,7 +187,7 @@ class LSABE():
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
 
 # !!!!!!!!!!!!
-        #rho1 = 1        
+        #rho1 = rho1/rho1        
 
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
@@ -231,12 +231,13 @@ class LSABE():
         u, rho2 = self.group.random(ZR), self.group.random(ZR)
 
 # !!!!!!!!!!!!
-        #rho2 = 1        
+        #u = u/u
+        #rho2 = rho2/rho2
 
 
         T1 = K1 ** u
         T2 = K2
-        T3 = u * rho2 / len(KW)                                            #   * (len(KW)**(-1))
+        T3 = u * rho2  / len(KW)                                            #   * (len(KW)**(-1))
         T4 = pair(self._PP['g'], self._PP['f']) ** u
         T5 = []
 
@@ -245,8 +246,8 @@ class LSABE():
             for kw in KW:
                 T5j = T5j + self.group.hash(kw, ZR) ** j
                 print (str(j) + ' ... ' + str(kw) + ' ... ' + str(T5j))
-            #T5j = (rho2 ** (-1)) * T5j 
-            T5j = T5j /rho2
+            T5j = (rho2 ** (-1)) * T5j 
+            #T5j = T5j /rho2
             T5.append(T5j)
 
         print ("Trapdoor:")
@@ -282,11 +283,11 @@ class LSABE():
 
         tj = I6[0]*T5[0]
         for j in range(1, len(T5)):
-            tj = tj + I6[1]*T5[1]
+            tj = tj + I6[j]*T5[j]
             print(str(j) + ' ... ' + str(tj) )
 
 
-        tj = E ** (T3 * tj )
+        tj = E ** (T3 * tj) 
         print (tj)
 
         if t == tj:
