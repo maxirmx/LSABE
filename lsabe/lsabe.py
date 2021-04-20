@@ -7,14 +7,20 @@ from .symcrypto import SymmetricCryptoAbstraction
 from .serializer import SER, DES
 
 class LSABE():
-    def __init__(self, msk_path):
+    def __init__(self, msk_path, max_kw):
 
 # These are file names to load\store MSK and PP
         self._msk_fname = msk_path.joinpath('lsabe.msk')   
-        self._pp_fname  = msk_path.joinpath('lsabe.pp')   
+        self._pp_fname  = msk_path.joinpath('lsabe.pp')
+# The maximum number of keywords
+        self._max_kw = max_kw   
 # ....
 # [charm crypto] For symmetric pairing G1 == G2  
         self.group = PairingGroup('SS512')
+
+# 1 in ZR (a kind of ugly but I cannot think of better method)
+        x = self.group.random(ZR) 
+        self._1 = x/x                 
 
     @property
     def msk_fname(self):
@@ -187,7 +193,7 @@ class LSABE():
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
 
 # !!!!!!!!!!!!
-        #rho1 = rho1/rho1        
+        # rho1 = rho1/rho1        
 
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
@@ -195,14 +201,13 @@ class LSABE():
         I3 = self._PP['g'] ** s
         I4 = self._PP['g'] ** rho1
 
-        I5 = []
+        I5 = ( )
         for i in range(0, len(rho)):
-            I5.append( (self._PP['g'] ** (self._MSK['beta']*self._MSK['lambda'])*(i+1)) * (self.group.hash(rho[i], G1) ** (-rho1)))
+            I5 = I5 + ( (self._PP['g'] ** (self._MSK['beta']*self._MSK['lambda'])*(i+1)) * (self.group.hash(rho[i], G1) ** (-rho1)), )
 
-        I6 = []
+        I6 = ( )
         for eta_j in eta:
-            x = eta_j/rho1
-            I6.append( x )
+            I6 = I6 + ((rho1 ** (-1)) * eta_j,  )
 
         E = (pair(self._PP['g'], self._PP['f']) ** rho1) * (pair(self._PP['g'],self._PP['g']) ** (self._MSK['alfa'] * b * rho1))
 
@@ -226,29 +231,30 @@ class LSABE():
 
 # .... Trapdoor
 
-    def TrapdoorGen(self, SK, KW, nKW):
+    def TrapdoorGen(self, SK, KW):
         (K1, K2, K3, K4, K5) = SK
         u, rho2 = self.group.random(ZR), self.group.random(ZR)
 
 # !!!!!!!!!!!!
         #u = u/u
-        #rho2 = rho2/rho2
+        # rho2 = rho2/rho2
 
 
         T1 = K1 ** u
         T2 = K2
-        T3 = u * rho2  / len(KW)                                            #   * (len(KW)**(-1))
+        lKW = self._1 * len(KW)                     # Make it ZR special value, not int
+        print (u)
+        print (rho2)
+        print (lKW)
+        T3 = (u * rho2) * (lKW**(-1))
         T4 = pair(self._PP['g'], self._PP['f']) ** u
-        T5 = []
+        T5 = ( )
 
-        for j in range(0, nKW+1):
+        for j in range(0, self._max_kw):
             T5j = 0
             for kw in KW:
                 T5j = T5j + self.group.hash(kw, ZR) ** j
-                print (str(j) + ' ... ' + str(kw) + ' ... ' + str(T5j))
-            T5j = (rho2 ** (-1)) * T5j 
-            #T5j = T5j /rho2
-            T5.append(T5j)
+            T5 = T5 + ((rho2 ** (-1)) * T5j ,)
 
         print ("Trapdoor:")
         print ((T1, T2, T3, T4, T5))
@@ -282,11 +288,12 @@ class LSABE():
         print (t)
 
         tj = I6[0]*T5[0]
-        for j in range(1, len(T5)):
+        for j in range(1, len(I6)):
             tj = tj + I6[j]*T5[j]
-            print(str(j) + ' ... ' + str(tj) )
 
 
+        print (T3)
+        print(tj)
         tj = E ** (T3 * tj) 
         print (tj)
 

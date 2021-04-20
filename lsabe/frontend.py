@@ -21,7 +21,7 @@ def startup():
     msk_path = args.msk_path
     dir_create(msk_path)
 
-    lsabe = LSABE(msk_path)
+    lsabe = LSABE(msk_path, 10)
 
 # MSK and PP are requied always
 # So we either generate them (SystemInit) or load from files (SystemLoad)
@@ -141,7 +141,7 @@ def startup():
         print('SK loaded from ' + str(sk_fname))
 
         td_fname = out_path.joinpath('lsabe.trapdoor')   
-        TD = lsabe.TrapdoorGen(SK, args.keywords, len(args.keywords)) # <--- !!!
+        TD = lsabe.TrapdoorGen(SK, args.keywords) 
         try:
             lsabe.serialize__TD(TD, td_fname)
         except:
