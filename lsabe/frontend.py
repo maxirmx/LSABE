@@ -14,8 +14,8 @@ def startup():
     parser = arguments_setup()
     args = parser.parse_args()
 
-    if (not args.init_flag and not args.keygen_flag and not args.encrypt_flag and not args.trapgen_flag):
-        print('Nothing to do. Specify either --init or --keygen or --encrypt or --trapgen.')
+    if (not args.init_flag and not args.keygen_flag and not args.encrypt_flag and not args.search_flag):
+        print('Nothing to do. Specify either --init or --keygen or --encrypt or --search.')
         farewell()
 
     msk_path = args.msk_path
@@ -62,19 +62,9 @@ def startup():
             farewell()
         print('SK saved to ' + str(sk_fname))
 
-        print('Executing "TransKeyGen(SK,z) → TK" ...')
-        TK = lsabe.TransKeyGen(SK)
-        tk_fname = out_path.joinpath('lsabe.tk')   
-        try:
-            lsabe.serialize__TK(TK, tk_fname)
-        except:
-            print('Failed to store TK to ' + str(tk_fname))
-            farewell()
-        print('TK saved to ' + str(tk_fname))
-
 # Encrypt (file encryption and index generation)
     if (args.encrypt_flag):
-        print('Executing Encrypt(M,KW,(A,ρ),PP) → CT ...')
+        print('Executing "Encrypt(M,KW,(A,ρ),PP) → CT" ...')
         l1 = len(args.keywords)
         if l1 == 0:
             print('--encrypt flag is set but no keywords are supplied.\n'
@@ -88,7 +78,7 @@ def startup():
             farewell()
         try:
             sk_fname = out_path.joinpath('lsabe.sk')   
-#            SK = lsabe.deserialize__SK(sk_fname)
+            SK = lsabe.deserialize__SK(sk_fname)
         except:
             print('Failed to load SK from ' + str(sk_fname))
             farewell()
@@ -124,30 +114,54 @@ def startup():
         except:
            print('Failed to store ciphertext to ' + str(c_fname))
            farewell()
+        print('Сiphertext stored to ' + str(c_fname))
 
-    if (args.trapgen_flag):
-        print('Executing Trapdoor(SK,KW′,PP) → TKW′ ...')
+# Search (trapdoor generation, search, transformation, decription)
+    if (args.search_flag):
+        print('Executing "Trapdoor(SK,KW′,PP) → TKW′" ...')
         if len(args.keywords) == 0:
-            print('--trapgen flag is set but no keywords are supplied.\n'
-                    'Trapdoorgeneration algorithm is defined as Trapdoor(SK,KW′,PP) → TKW′, where KW′ is a set of keywords.\n'
+            print('--search flag is set but no keywords are supplied.\n'
+                    'Trapdoor generation algorithm is defined as Trapdoor(SK,KW′,PP) → TKW′, where KW′ is a set of keywords.\n'
                     'Please provide at least one keyword. --kwd keyword will be good enouph')
             farewell()
         try:
            sk_fname = out_path.joinpath('lsabe.sk')   
-#           SK = lsabe.deserialize__SK(sk_fname)
+           SK = lsabe.deserialize__SK(sk_fname)
         except:
            print('Failed to load SK from ' + str(sk_fname))
            farewell()
         print('SK loaded from ' + str(sk_fname))
 
-        td_fname = out_path.joinpath('lsabe.trapdoor')   
         TD = lsabe.TrapdoorGen(SK, args.keywords) 
-        try:
-            lsabe.serialize__TD(TD, td_fname)
-        except:
-            print('Failed to store trapdoor to ' + str(td_fname))
-            farewell()
-
+# The code to serialize trapdoor ... no need
+#        td_fname = out_path.joinpath('lsabe.trapdoor')   
+#        try:
+#            lsabe.serialize__TD(TD, td_fname)
+#        except:
+#            print('Failed to store trapdoor to ' + str(td_fname))
+#            farewell()
 #        CT=lsabe.deserialize__CT(out_path.joinpath('lsabe.ciphertext'))
-        lsabe.Search(CT, TD)
+
+        print('Executing "Search(CT,TD) → True/False" ...')
+        res = lsabe.Search(CT, TD)
+        
+        print('Search algoritm returned "' + str(res) + '"')
+
+        print('Executing "TransKeyGen(SK,z) → TK" ...')
+        z =  lsabe.z()
+        TK = lsabe.TransKeyGen(SK, z)
+
+# The code to serialize transformation key ... no need
+#        tk_fname = out_path.joinpath('lsabe.tk')   
+#        try:
+#            lsabe.serialize__TK(TK, tk_fname)
+#        except:
+#            print('Failed to store TK to ' + str(tk_fname))
+#            farewell()
+#        print('TK saved to ' + str(tk_fname))
+
+
+        print('Executing "Transform (CT,TK) → CTout/⊥" ...')
+        TK = lsabe.Transform(CT, TK)
+
 

@@ -130,25 +130,32 @@ class LSABE():
         l = DES(sk_fname, self.group)
         return l.g_val(3) + (l.g_tup(), ) + l.g_val(1) 
 
+
+# ................................................................................
+# z
+# Thedata  user  chooses  a  random  value z ∈ Zp
+# ................................................................................
+    def z(self):
+        z = self.group.random(ZR)
+        return z
+
 # ................................................................................
 # TransKeyGen(SK, z) → TK.   
-# Given the dataowner’s attribute sets, key generation center (KGC) conducts
-# the SecrekeyGen algorithm and outputs the secret key SK.    
-# ................................................................................
+# Transformation key generation(TransKeyGen):
+# # ................................................................................
     
-    def TransKeyGen(self, SK):
+    def TransKeyGen(self, SK, z):
         (K1, K2, K3, K4, K5) = SK
-        z = self.group.random(ZR)
-        K3T = K3**z   
-        K4T = ()
+        TK3 = K3**z   
+        TK4 = ()
         for s in K4:
-            K4T = K4T +(s**z,)
-        K5T = K5**z
+            TK4 = TK4 +(s**z,)
+        TK5 = K5**z
 
 #        print ("Transformation key:")
-#        print ((K3T, K4T, K5T))
+#        print ((TK3, TK4, TK5))
 
-        return (K3T, K4T, K5T)
+        return (TK3, TK4, TK5)
 
 # ................................................................................
 #  SK serializer and deserializer
@@ -192,9 +199,6 @@ class LSABE():
 
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
 
-# !!!!!!!!!!!!
-        # rho1 = rho1/rho1        
-
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
         I2 = self._PP['g'] ** (self._MSK['lambda']*b)
@@ -229,23 +233,19 @@ class LSABE():
         l = DES(ct_fname, self.group)
         return (l.g_val(5) + (l.g_tup(), ) + (l.g_tup(), ) + l.g_val(1) + (l.g_bytes(),))
 
-# .... Trapdoor
+# ................................................................................
+# Trapdoor  (SK,KW′,PP) → TKW′.  
+# Given  the  secret  key SK, a query keyword set KW′,
+#  data user runs the Trapdoor algorithm and outputs the trapdoor TKW′.
+# ................................................................................
 
     def TrapdoorGen(self, SK, KW):
         (K1, K2, K3, K4, K5) = SK
         u, rho2 = self.group.random(ZR), self.group.random(ZR)
 
-# !!!!!!!!!!!!
-        #u = u/u
-        # rho2 = rho2/rho2
-
-
         T1 = K1 ** u
         T2 = K2
         lKW = self._1 * len(KW)                     # Make it ZR special value, not int
-        print (u)
-        print (rho2)
-        print (lKW)
         T3 = (u * rho2) * (lKW**(-1))
         T4 = pair(self._PP['g'], self._PP['f']) ** u
         T5 = ( )
@@ -256,8 +256,8 @@ class LSABE():
                 T5j = T5j + self.group.hash(kw, ZR) ** j
             T5 = T5 + ((rho2 ** (-1)) * T5j ,)
 
-        print ("Trapdoor:")
-        print ((T1, T2, T3, T4, T5))
+#        print ("Trapdoor:")
+#        print ((T1, T2, T3, T4, T5))
 
         return (T1, T2, T3, T4, T5)
             
@@ -284,20 +284,19 @@ class LSABE():
         (I, I1, I2, I3, I4, I5, I6, E, CM) = CT
         (T1, T2, T3, T4, T5) = TKW
 
-        t = T4 * pair(T1, (I1**T2) * I2)
-        print (t)
-
-        tj = I6[0]*T5[0]
+        TJ = I6[0]*T5[0]
         for j in range(1, len(I6)):
-            tj = tj + I6[j]*T5[j]
+            TJ = TJ + I6[j]*T5[j]
 
+        return (T4 * pair(T1, (I1**T2) * I2) == E ** (T3 * TJ))
 
-        print (T3)
-        print(tj)
-        tj = E ** (T3 * tj) 
-        print (tj)
-
-        if t == tj:
-            print('OK')
-        else:
-            print('Nay')
+# ................................................................................
+# Transform (CT,TK) → CTout/⊥
+# Given the transformationkeyTK, the cloud server can transform the ciphertext  
+# into a partially decrypted ciphertext. This Transform algorithm is executed if 
+# and only if the search algorithm outputs “1" and the attributes embedded in 
+# the transformation key satisfy the access structure of the ciphertext CT.
+# ................................................................................
+    def Transform(self, CT, TK):
+        (I, I1, I2, I3, I4, I5, I6, E, CM) = CT
+        (TK3, TK4, TK5) = TK

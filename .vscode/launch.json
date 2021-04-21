@@ -15,7 +15,7 @@
                     "--policy", "1", "2", 
                     // "3", "4",
                 // "4", "5", "6", 
-                    "--trapgen"]
+                    "--search"]
 //           "args" : ["--init"]  
 //            "args": ["--keygen",  "--sec-attr", "attr-1", "attr-2"]
 //           "args": ["--keygen", "--sec-attr"]

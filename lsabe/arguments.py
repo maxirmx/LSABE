@@ -36,13 +36,13 @@ def arguments_setup():
     parser.add_argument('--encrypt', 
                         dest        =   'encrypt_flag', 
                         action      =   'store_true',
-                        help        =   'Generate keyword index (CAUTION! NO CHECKS BEFORE OVERWRITE!)'
+                        help        =   'Encrypt message and generate keyword index'
     )
 
-    parser.add_argument('--trapgen', 
-                        dest        =   'trapgen_flag', 
+    parser.add_argument('--search', 
+                        dest        =   'search_flag', 
                         action      =   'store_true',
-                        help        =   'Generate  trapdoor (CAUTION! NO CHECKS BEFORE OVERWRITE!)'
+                        help        =   'Generate  trapdoor, search matching messages, generate transformation key, tranform and decrypt'
     )
 
     parser.add_argument('--out-path',  
