@@ -57,9 +57,9 @@ CUSTOM_COMMANDS = [
 # Charm crypto                     
                     ['rm', '-rf', 'charm'],
                     ['git', 'clone', 'https://github.com/JHUISI/charm.git'],
-                    ['sh', '-c', 'cd charm && ./configure.sh'],
-                    ['sh', '-c', 'cd charm && make'],
-                    ['sh', '-c', 'cd charm && make install'],
+                    ['sh', '-c', '"cd charm && ./configure.sh"'],
+                    ['sh', '-c', '"cd charm && make"'],
+                    ['sh', '-c', '"cd charm && make install"'],
                     ['rm', '-rf', 'charm']
                   ]
 

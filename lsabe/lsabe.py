@@ -1,4 +1,6 @@
 import os
+import sys
+import random
 # https://jhuisi.github.io/charm/cryptographers.html
 from charm.toolbox.pairinggroup import PairingGroup,ZR,G1,G2,GT,pair,extract_key
 from pathlib import Path
@@ -198,7 +200,8 @@ class LSABE():
 #            print ('P(' + str(hkwi) + ') = ' + str(polyVal(eta, hkwi)) + ' ~~~~ expected 1')
 
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
-
+        
+        s = random.randrange(sys.maxsize)
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
         I2 = self._PP['g'] ** (self._MSK['lambda']*b)
