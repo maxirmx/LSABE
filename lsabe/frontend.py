@@ -1,6 +1,9 @@
+import os
 import argparse
 import pathlib
 import functools
+import random
+import string
 from .arguments import arguments_setup, dir_create
 from .lsabe import LSABE
 
@@ -42,9 +45,6 @@ def startup():
             farewell()
         print('MSK and PP loaded succesfully')
 
-    data_path = args.data_path
-    dir_create(out_path)
-
 # SK and TK generation
     if (args.keygen_flag):
         print('Executing "SecretKeyGen(MSK,S,PP) → SK" ...')
@@ -53,7 +53,7 @@ def startup():
                     'Secret key generation algorithm is defined as SecretKeyGen(MSK,S,PP) → SK, where S is a set of security attributes.\n'
                     'Please provide at least one attribute. --sec-attr attr will be good enouph')
             farewell()
-        sk_fname = out_path.joinpath('lsabe.sk')   
+        sk_fname = key_path.joinpath('lsabe.sk')   
         SK = lsabe.SecretKeyGen(args.sec_attr)
         try:
             lsabe.serialize__SK(SK, sk_fname)
@@ -64,6 +64,9 @@ def startup():
 
 # Encrypt (file encryption and index generation)
     if (args.encrypt_flag):
+        data_path = args.data_path
+        dir_create(data_path)
+
         print('Executing "Encrypt(M,KW,(A,ρ),PP) → CT" ...')
         l1 = len(args.keywords)
         if l1 == 0:
@@ -77,7 +80,7 @@ def startup():
                     'Please provide it, using quotes if there is more then one word. --msg "A message" will be good enouph')
             farewell()
         try:
-            sk_fname = out_path.joinpath('lsabe.sk')   
+            sk_fname = key_path.joinpath('lsabe.sk')   
             SK = lsabe.deserialize__SK(sk_fname)
         except:
             print('Failed to load SK from ' + str(sk_fname))
@@ -107,17 +110,22 @@ def startup():
                 r.append(v)
             p.append(r)
 
-        c_fname = out_path.joinpath('lsabe.ciphertext')   
+        ct_name = ''.join(random.choice(string.ascii_letters) for _ in range(8))
+        ct_fname = data_path.joinpath(ct_name + '.ciphertext')   
         CT = lsabe.EncryptAndIndexGen( args.message, args.keywords, p )
         try:
-           lsabe.serialize__CT(CT, c_fname)
+           lsabe.serialize__CT(CT, ct_fname)
         except:
-           print('Failed to store ciphertext to ' + str(c_fname))
+           print('Failed to store ciphertext to ' + str(ct_fname))
            farewell()
-        print('Сiphertext stored to ' + str(c_fname))
+        print('Сiphertext stored to ' + str(ct_fname))
 
 # Search (trapdoor generation, search, transformation, decription)
     if (args.search_flag):
+
+        data_path = args.data_path
+        dir_create(data_path)
+
         print('Executing "Trapdoor(SK,KW′,PP) → TKW′" ...')
         if len(args.keywords) == 0:
             print('--search flag is set but no keywords are supplied.\n'
@@ -125,7 +133,7 @@ def startup():
                     'Please provide at least one keyword. --kwd keyword will be good enouph')
             farewell()
         try:
-           sk_fname = out_path.joinpath('lsabe.sk')   
+           sk_fname = key_path.joinpath('lsabe.sk')   
            SK = lsabe.deserialize__SK(sk_fname)
         except:
            print('Failed to load SK from ' + str(sk_fname))
@@ -140,16 +148,22 @@ def startup():
 #        except:
 #            print('Failed to store trapdoor to ' + str(td_fname))
 #            farewell()
-#        CT=lsabe.deserialize__CT(out_path.joinpath('lsabe.ciphertext'))
 
-        print('Executing "Search(CT,TD) → True/False" ...')
-        res = lsabe.Search(CT, TD)
-        
-        print('Search algoritm returned "' + str(res) + '"')
 
-        print('Executing "TransKeyGen(SK,z) → TK" ...')
-        z =  lsabe.z()
-        TK = lsabe.TransKeyGen(SK, z)
+        print('Scanning ' + str(data_path) + ' ...')
+        msg_files = [f for f in os.listdir(str(data_path)) if f.endswith('.ciphertext')]
+        for msg_file in msg_files:
+            ct_fname = data_path.joinpath(msg_file)   
+            CT = lsabe.deserialize__CT(ct_fname)
+            print('===== ' + msg_file + ' =====')
+            print('Executing "Search(CT,TD) → True/False" ...')
+    
+            res = lsabe.Search(CT, TD)
+            print('Search algoritm returned "' + str(res) + '"')
+
+            print('Executing "TransKeyGen(SK,z) → TK" ...')
+            z =  lsabe.z()
+            TK = lsabe.TransKeyGen(SK, z)
 
 # The code to serialize transformation key ... no need
 #        tk_fname = out_path.joinpath('lsabe.tk')   
@@ -161,7 +175,7 @@ def startup():
 #        print('TK saved to ' + str(tk_fname))
 
 
-        print('Executing "Transform (CT,TK) → CTout/⊥" ...')
-        TK = lsabe.Transform(CT, TK)
+            print('Executing "Transform (CT,TK) → CTout/⊥" ...')
+            TK = lsabe.Transform(CT, TK)
 
 

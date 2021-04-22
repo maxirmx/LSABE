@@ -9,18 +9,20 @@
             "type": "python",
             "request": "launch",
             "module": "lsabe",
-            "args":["--keygen", "--encrypt", "--kwd", "searchable",  "encryption", 
+            "args":[
+                "--kwd", "Searchable",
                 // "protocol", "hello",
-                    "--sec-attr", "foo", "--msg", "searchable encryption algorithm is good",
-                    "--policy", "1", "2", 
+//                    "--sec-attr", "foo", "--msg", "searchable encryption algorithm is good",
+//                    "--policy", "1", "2", 
                     // "3", "4",
                 // "4", "5", "6", 
                     "--search"]
            //"args" : ["--init"]  
+//           "args" : ["--help"]  
 //            "args": ["--keygen",  "--sec-attr", "attr-1", "attr-2"]
 //           "args": ["--keygen", "--sec-attr"]
 //           "args": ["--keygen"]
-//            "args":[ "--encrypt", "--kwd", "searchable", "encryption", "algorithm",  "--policy", "1", "2", "3"]
+//            "args":[ "--encrypt", "--kwd", "searchable", "encryption", "algorithm",  "--policy", "1", "2", "3", "--msg", "searchable encryption algorithm is good"]
 //           "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--policy", "1", "2", "3"]
 //            "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--kwd", "searchable", "encryption", "algorithm"]
  //           "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--kwd", "searchable", "encryption", "algorithm",

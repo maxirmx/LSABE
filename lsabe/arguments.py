@@ -1,6 +1,7 @@
 import argparse
 import pathlib
 
+
 def arguments_setup():
     default_key_path = pathlib.Path(__file__).parent.parent.joinpath('keys')
     default_data_path = pathlib.Path(__file__).parent.parent.joinpath('data')
@@ -8,7 +9,16 @@ def arguments_setup():
     parser = argparse.ArgumentParser(
         description             =   'LSABE algorithm', 
         prog                    =   'lsabe',
-        fromfile_prefix_chars   =   '@'
+        fromfile_prefix_chars   =   '@',
+        epilog                  =   
+        '''Suggested initial test call sequence:
+           python -m lsabe --init 
+           python -m lsabe --keygen --sec-attr read
+           python -m lsabe --encrypt --msg "Searchable encryption is good" --kwd Searchable encryption --policy 1 1 
+           python -m lsabe --encrypt --msg "This is unrelated message" --kwd unrelated message --policy 1 1 
+           python -m lsabe --search searchable
+           python -m lsabe --search ENCRYPTION''',
+        formatter_class=argparse.RawDescriptionHelpFormatter   
     )
 
     parser.add_argument('--init', 
