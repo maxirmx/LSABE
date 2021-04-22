@@ -2,8 +2,8 @@ import argparse
 import pathlib
 
 def arguments_setup():
-    default_msk_path = pathlib.Path(__file__).parent.parent.joinpath('msk')
-    default_out_path = pathlib.Path(__file__).parent.parent.joinpath('out')
+    default_key_path = pathlib.Path(__file__).parent.parent.joinpath('keys')
+    default_data_path = pathlib.Path(__file__).parent.parent.joinpath('data')
 
     parser = argparse.ArgumentParser(
         description             =   'LSABE algorithm', 
@@ -18,13 +18,13 @@ def arguments_setup():
                                         'If this flag is not set, MSK and PP are loaded from the files.'
     )
 
-    parser.add_argument('--msk-path',  
+    parser.add_argument('--key-path',  
                         type        =   pathlib.Path, 
-                        dest        =   'msk_path',
+                        dest        =   'key_path',
                         metavar     =   '<path>',
-                        default     =   default_msk_path,
-                        help        =   'Directory to load or store MSK (lsabe.msk) and PP (lsabe.pp). ' + 
-                                        'At this sytem it will default to ' + str(default_msk_path)
+                        default     =   default_key_path,
+                        help        =   'Directory to load or store MSK (lsabe.msk), PP (lsabe.pp) and SK (lsabe.sk). ' + 
+                                        'At this sytem it will default to ' + str(default_key_path)
     )
 
     parser.add_argument('--keygen', 
@@ -45,13 +45,13 @@ def arguments_setup():
                         help        =   'Generate  trapdoor, search matching messages, generate transformation key, tranform and decrypt'
     )
 
-    parser.add_argument('--out-path',  
+    parser.add_argument('--data-path',  
                         type        =   pathlib.Path, 
-                        dest        =   'out_path',
+                        dest        =   'data_path',
                         metavar     =   '<path>',
-                        default     =   default_out_path,
-                        help        =   'Directory to store keys, indicies and other staff. SK (lsabe.sk), ciphertext (lsabe.ciphertext), trapdoor (lsabe.trp).' + 
-                                        'At this sytem it will default to ' + str(default_msk_path)
+                        default     =   default_data_path,
+                        help        =   'Directory to store encrypted messages (*.ciphertext). ' + 
+                                        'At this sytem it will default to ' + str(default_data_path)
     )
 
     parser.add_argument('--sec-attr',  

@@ -202,6 +202,7 @@ class LSABE():
         s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
         
         s = random.randrange(sys.maxsize)
+        
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
         I2 = self._PP['g'] ** (self._MSK['lambda']*b)

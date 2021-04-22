@@ -18,10 +18,10 @@ def startup():
         print('Nothing to do. Specify either --init or --keygen or --encrypt or --search.')
         farewell()
 
-    msk_path = args.msk_path
-    dir_create(msk_path)
+    key_path = args.key_path
+    dir_create(key_path)
 
-    lsabe = LSABE(msk_path, 10)
+    lsabe = LSABE(key_path, 10)
 
 # MSK and PP are requied always
 # So we either generate them (SystemInit) or load from files (SystemLoad)
@@ -42,7 +42,7 @@ def startup():
             farewell()
         print('MSK and PP loaded succesfully')
 
-    out_path = args.out_path
+    data_path = args.data_path
     dir_create(out_path)
 
 # SK and TK generation
