@@ -9,14 +9,16 @@ LSABE algorithm
 
 optional arguments:
   -h, --help            show this help message and exit
-  --init                Generate MSK and PP files (CAUTION! NO CHECKS BEFORE OVERWRITE!) If this flag is not set, MSK and PP are loaded from the files.
+  --init                Generate MSK and PP files (CAUTION! NO CHECKS BEFORE OVERWRITE!) 
+                        If this flag is not set, MSK and PP are loaded from the files.
   --key-path <path>     Directory to load or store MSK (lsabe.msk), PP (lsabe.pp) and SK (lsabe.sk). 
   --keygen              Generate secret key (CAUTION! NO CHECKS BEFORE OVERWRITE!)
   --encrypt             Encrypt message and generate keyword index
   --search              Generate trapdoor, search matching messages, generate transformation key, transform and decrypt
   --data-path <path>    Directory to store encrypted messages (*.ciphertext).
   --kwd <keywords> [<keywords> ...]  Keyword. Multiply keywords are supported, e.g.: --kwd searchable encryption algorithm. 
-                        Maximun number of keywords is statically set to 10 If you want to change it, please modify MAX_KEYWORDS value in the source code.
+                        Maximun number of keywords is statically set to 10. 
+                        If you want to change it, please modify MAX_KEYWORDS value in the source code.
   --msg <message>       A message to encrypt. Quotes are welcome, e.g.: --msg "Searchable encryption is good."
 
 Suggested initial test call sequence:
