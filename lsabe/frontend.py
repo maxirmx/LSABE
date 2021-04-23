@@ -1,3 +1,5 @@
+# ..... LSABE module frontend (aka command line and arguments processing) ......
+
 import os
 import argparse
 import pathlib
@@ -131,7 +133,7 @@ def startup():
         print('SK loaded from ' + str(sk_fname))
 
         TD = lsabe.TrapdoorGen(SK, args.keywords) 
-# The code to serialize trapdoor ... no need
+# The code to serialize trapdoor ... (no need to do it with this frontend)
 #        td_fname = out_path.joinpath('lsabe.trapdoor')   
 #        try:
 #            lsabe.serialize__TD(TD, td_fname)
@@ -156,7 +158,7 @@ def startup():
                 z =  lsabe.z()
                 TK = lsabe.TransKeyGen(SK, z)
 
-# The code to serialize transformation key ... no need
+# The code to serialize transformation key ... (no need to do it with this frontend)
 #        tk_fname = out_path.joinpath('lsabe.tk')   
 #        try:
 #            lsabe.serialize__TK(TK, tk_fname)

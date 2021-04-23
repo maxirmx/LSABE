@@ -90,11 +90,11 @@ class SymmetricCryptoAbstraction(object):
             message = bytes(message, "utf-8")
         ct = self._encrypt(message)
         ctIV = b64encode(ct['IV']).decode('utf-8')
-        ctCT = b64encode(ct['CipherText']).decode('utf-8') + '='
+        ctCT = b64encode(ct['CipherText']).decode('utf-8') 
         return (ctCT, ctIV)
 
     def lsabe_decrypt(self, CT):
         (ctCT, ctIV) = CT
-        cipher = self._initCipher(b64decode(bytes(ctIV + '==', 'utf-8')))
+        cipher = self._initCipher(b64decode(bytes(ctIV, 'utf-8')))
         msg = cipher.decrypt(b64decode(bytes(ctCT, 'utf-8')))
         return self._padding.decode(msg).decode("utf-8") 

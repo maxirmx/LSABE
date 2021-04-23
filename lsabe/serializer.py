@@ -17,24 +17,27 @@ class SER():
     def p_val(self, R):
         for v in R:
             self.__file.write(self.__g.serialize(v))
+            self.__file.write(b' ')
         return self
 
     def p_tup(self, R):
-        self.__file.write(b'%(len)04d=' %{b"len":  len(R)} )
+        self.__file.write(b'%(len)04d' %{b"len":  len(R)} )
+        self.__file.write(b' ')
         self.p_val(R)
         return self
 
     def p_bytes(self, M):
         self.__file.write(bytes(M, "utf-8"))
+        self.__file.write(b' ')
         return self
 
 # .... DES - deserializer ...
 class DES():
     def __init__(self, fname, group):
-        file =fname.open(mode='r')
-        data = file.read()
+        file =fname.open(mode='rb')
+        data = file.read().decode('utf-8')
         file.close
-        self.__d = re.split('=', data)
+        self.__d = data.split()
         self.__i = 0
         self.__g = group
 
