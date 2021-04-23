@@ -13,7 +13,7 @@ def formuleDeViete(roots):
         for j in range(n - i - 1, n):
             coeff[j] -= roots[i - 1] * coeff[j + 1]  
 #  Note.  Charmcryptor ZR values do not really support negations but do support substractions.   
-#         (-1) * (roots[i - 1] * coeff[j + 1]) breaks the calculation bitterly    
+#         Canonical (-1) * (roots[i - 1] * coeff[j + 1]) breaks the calculation bitterly    
     
 #   print("Polynomial Coefficients : ", end = "")
 #    for i in coeff: 
@@ -23,7 +23,7 @@ def formuleDeViete(roots):
 
 # ... polyVal ...
 # Calculates polynomial value for given x
-# Used and oreserverd for testing purposes only. May be commented or deleted out
+# Used and/or reserverd for testing purposes only. May be commented or deleted out
 def polyVal(coeff, x):
     val = 0
     xn = 1

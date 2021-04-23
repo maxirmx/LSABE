@@ -1,3 +1,6 @@
+# .... Symmentric encryption ...
+# Adopted from charm-crypto toolbox for LSABE implementation
+
 from charm.toolbox.paddingschemes import PKCS7Padding
 from charm.toolbox.securerandom import OpenSSLRand
 from charm.core.crypto.cryptobase import MODE_CBC,AES,selectPRP
@@ -83,7 +86,15 @@ class SymmetricCryptoAbstraction(object):
         return self._padding.decode(msg)
 
     def lsabe_encrypt(self, message):
-        #Because the IV cannot be set after instantiation, decrypt and encrypt
-        # must operate on their own instances of the cipher
-        cipher = self._initCipher()
-        return b64encode(cipher.encrypt(self._padding.encode(message))).decode('utf-8')
+        if type(message) != bytes :
+            message = bytes(message, "utf-8")
+        ct = self._encrypt(message)
+        ctIV = b64encode(ct['IV']).decode('utf-8')
+        ctCT = b64encode(ct['CipherText']).decode('utf-8') + '='
+        return (ctCT, ctIV)
+
+    def lsabe_decrypt(self, CT):
+        (ctCT, ctIV) = CT
+        cipher = self._initCipher(b64decode(bytes(ctIV + '==', 'utf-8')))
+        msg = cipher.decrypt(b64decode(bytes(ctCT, 'utf-8')))
+        return self._padding.decode(msg).decode("utf-8") 

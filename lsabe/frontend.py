@@ -11,7 +11,6 @@ def farewell():
         print('Exiting ... To get help please run python -m lsabe --help.')
         exit(-1)
 
-
 def startup():
 
     parser = arguments_setup()
@@ -49,10 +48,19 @@ def startup():
     if (args.keygen_flag):
         print('Executing "SecretKeyGen(MSK,S,PP) → SK" ...')
         if len(args.sec_attr) == 0:
-            print(  '--keygen flag is set but no security attributes are supplied.\n'
-                    'Secret key generation algorithm is defined as SecretKeyGen(MSK,S,PP) → SK, where S is a set of security attributes.\n'
-                    'Please provide at least one attribute. --sec-attr attr will be good enouph')
+            print(  '''--keygen flag is set but no security attributes are supplied.
+                    Secret key generation algorithm is defined as SecretKeyGen(MSK,S,PP) → SK, where S is a set of security attributes.
+                    
+                    Security attribute is an abstraction representing the basic properties or characteristics of an entity with respect 
+                    to safeguarding information; typically associated with internal data structures (e.g., records, buffers, files) within 
+                    the information system which are used to enable the implementation of access control and flow control policies; 
+                    reflect special dissemination, handling, or distribution instructions; or support other aspects of the information 
+                    security policy. [NIST SP 800-53 Rev. 4]
+                    
+                    Please provide at least one attribute. --sec-attr "full access" will be good enouph'''
+                )
             farewell()
+        print('Security attributes: ' + str(args.sec_attr))    
         sk_fname = key_path.joinpath('lsabe.sk')   
         SK = lsabe.SecretKeyGen(args.sec_attr)
         try:
@@ -88,31 +96,13 @@ def startup():
         print('SK loaded from ' + str(sk_fname))
 
         (K1, K2, K3, K4, K5) = SK
-        n = len(K4)
-
-        np = len(args.policy)
-
-        if np != l1*n:
-            print('Wrong number of access policy entries.\n'
-                  'Encryption algorithm is defined as Encrypt(M,KW,(A,ρ),PP) → CT, where (A,ρ) an access policy mapping security attributes to keywords.\n'
-                  'Input was ' + str(l1) + ' keywords, ' + str(n) +' attributes at SK(' + str(sk_fname) +'), but ' + str(np) + ' policy entries.\n'
-                  'Please provide policy as a list of integers in the amount of <number of attributes> * <number of keywords> = ' + str(l1*n) +'.')
-            
-            helper = functools.reduce(lambda h, x: h + str(x+1) + ' ', range(l1*n), '')      
-            print('--policy ' + helper + 'will be good enouph')
-            farewell()
-
-        p = []
-        for i in range(0, l1):
-            r = []
-            for j in range(0, n):
-                v = args.policy[i*n+j]
-                r.append(v)
-            p.append(r)
 
         ct_name = ''.join(random.choice(string.ascii_letters) for _ in range(8))
         ct_fname = data_path.joinpath(ct_name + '.ciphertext')   
-        CT = lsabe.EncryptAndIndexGen( args.message, args.keywords, p )
+
+        print('Message: \'' + str(args.message) + '\'' )    
+        print('Keywords: ' + str(args.keywords))    
+        CT = lsabe.EncryptAndIndexGen( args.message, args.keywords)
         try:
            lsabe.serialize__CT(CT, ct_fname)
         except:
@@ -123,15 +113,15 @@ def startup():
 # Search (trapdoor generation, search, transformation, decription)
     if (args.search_flag):
 
+        if len(args.keywords) == 0:
+            print('--search flag is set but no keywords are supplied.\n'
+                    'Please provide at least one keyword. --kwd keyword will be good enouph')
+            farewell()
+
         data_path = args.data_path
         dir_create(data_path)
 
         print('Executing "Trapdoor(SK,KW′,PP) → TKW′" ...')
-        if len(args.keywords) == 0:
-            print('--search flag is set but no keywords are supplied.\n'
-                    'Trapdoor generation algorithm is defined as Trapdoor(SK,KW′,PP) → TKW′, where KW′ is a set of keywords.\n'
-                    'Please provide at least one keyword. --kwd keyword will be good enouph')
-            farewell()
         try:
            sk_fname = key_path.joinpath('lsabe.sk')   
            SK = lsabe.deserialize__SK(sk_fname)
@@ -161,9 +151,10 @@ def startup():
             res = lsabe.Search(CT, TD)
             print('Search algoritm returned "' + str(res) + '"')
 
-            print('Executing "TransKeyGen(SK,z) → TK" ...')
-            z =  lsabe.z()
-            TK = lsabe.TransKeyGen(SK, z)
+            if res:
+                print('Executing "TransKeyGen(SK,z) → TK" ...')
+                z =  lsabe.z()
+                TK = lsabe.TransKeyGen(SK, z)
 
 # The code to serialize transformation key ... no need
 #        tk_fname = out_path.joinpath('lsabe.tk')   
@@ -175,7 +166,12 @@ def startup():
 #        print('TK saved to ' + str(tk_fname))
 
 
-            print('Executing "Transform (CT,TK) → CTout/⊥" ...')
-            TK = lsabe.Transform(CT, TK)
+                print('Executing "Transform (CT,TK) → CTout/⊥" ...')
+                CTout = lsabe.Transform(CT, TK)
+
+                print('Executing "Decrypt(z,CTout) → M" ...')
+
+                msg = lsabe.Decrypt(z, CTout)
+                print('Message: \"' + msg + '\"' )
 
 

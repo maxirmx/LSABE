@@ -13,11 +13,11 @@ def arguments_setup():
         epilog                  =   
         '''Suggested initial test call sequence:
            python -m lsabe --init 
-           python -m lsabe --keygen --sec-attr read
-           python -m lsabe --encrypt --msg "Searchable encryption is good" --kwd Searchable encryption --policy 1 1 
-           python -m lsabe --encrypt --msg "This is unrelated message" --kwd unrelated message --policy 1 1 
-           python -m lsabe --search searchable
-           python -m lsabe --search ENCRYPTION''',
+           python -m lsabe --keygen
+           python -m lsabe --encrypt --msg "Searchable encryption is good" --kwd Searchable encryption 
+           python -m lsabe --encrypt --msg "This is unrelated message" --kwd unrelated message
+           python -m lsabe --search --kwd Searchable
+           python -m lsabe --search --kwd ENCRYPTION''',
         formatter_class=argparse.RawDescriptionHelpFormatter   
     )
 
@@ -68,7 +68,7 @@ def arguments_setup():
                         nargs      =   '+',     
                         dest        =   'sec_attr',
                         metavar     =   '<security attribute>',
-                        default     =   [],
+                        default     =   ["full access"],
                         help        =   'Security attribute. Multiply attributes are supported, e.g.: --sec-attr foo bar foobar' 
     )
 
@@ -84,16 +84,6 @@ def arguments_setup():
                         dest        =   'message',
                         metavar     =   '<message>',
                         help        =   'A message to encrypt. Quotes are welcome, e.g.: --msg "Searchable encryption is good."' 
-    )
-
-    parser.add_argument('--policy',  
-                        nargs       =   '+',     
-                        type        =   int,
-                        default     =   [],
-                        dest        =   'policy',
-                        metavar     =   '<policy>',
-                        help        =   ' ... be the function that associates rows of A with the attributes ...' + 
-                                        ' Whatever it means please provide integers in the amount of <number of attributes> * <number of keywords>."' 
     )
 
     return parser

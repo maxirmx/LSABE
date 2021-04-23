@@ -1,4 +1,7 @@
 # .... LSABE helper classes ...
+# SER - serializer  
+# DES - deserializer 
+
 
 import re
 

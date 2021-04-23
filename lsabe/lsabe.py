@@ -1,12 +1,11 @@
 import os
-import sys
-import random
 # https://jhuisi.github.io/charm/cryptographers.html
 from charm.toolbox.pairinggroup import PairingGroup,ZR,G1,G2,GT,pair,extract_key
 from pathlib import Path
 from .formuleDeViete import formuleDeViete, polyVal
 from .symcrypto import SymmetricCryptoAbstraction
 from .serializer import SER, DES
+from .accessPolicy import accessPolicy
 
 class LSABE():
     def __init__(self, msk_path, max_kw):
@@ -105,12 +104,16 @@ class LSABE():
     def SecretKeyGen(self, S):
         t, delta = self.group.random(ZR), self.group.random(ZR)
 
+        t = self._1
+
         K1 = self._PP['g'] ** (self._MSK['alfa']/(self._MSK['lambda'] + delta))
         K2 = delta
         K3 = self._PP['g'] ** t
         K4 = ()
         for s in S:
-            K4 = K4 +(self.group.hash(s, G1) ** t,)
+#            K4 = K4 +(self.group.hash(s, G1) ** t,)
+            K4 = K4 +(self.group.hash("1", G1) ** t,)
+
         K5 = (self._PP['g'] ** self._MSK['alfa']) * (self._PP['g'] ** (self._MSK['beta'] * t))
 
 #        print ("Secret key:")
@@ -135,10 +138,11 @@ class LSABE():
 
 # ................................................................................
 # z
-# Thedata  user  chooses  a  random  value z ∈ Zp
+# The data user chooses a random value z ∈ Zp
 # ................................................................................
     def z(self):
         z = self.group.random(ZR)
+        self._z = z
         return z
 
 # ................................................................................
@@ -177,10 +181,11 @@ class LSABE():
 # Given keyword set KW extracted from file M and the access policy(A,ρ), data owner 
 # outputs ciphertext CT, which contains the secure index I and the encrypted file CM
 # ................................................................................
-    def EncryptAndIndexGen(self, M, KW, rho):
+    def EncryptAndIndexGen(self, M, KW):
 
         UpsilonWithHook = self.group.random(GT)
         kse = extract_key(UpsilonWithHook)
+
         a   = SymmetricCryptoAbstraction(kse)
         CM = a.lsabe_encrypt(bytes(M, "utf-8"))
 
@@ -199,19 +204,25 @@ class LSABE():
 #        for hkwi in hkw:
 #            print ('P(' + str(hkwi) + ') = ' + str(polyVal(eta, hkwi)) + ' ~~~~ expected 1')
 
-        s, rho1, b = self.group.random(ZR), self.group.random(ZR), self.group.random(ZR)
+        rho1, b = self.group.random(ZR), self.group.random(ZR)
         
-        s = random.randrange(sys.maxsize)
-        
+        ap = accessPolicy(10,10)
+        v = ap.randVector()
+        s = v[0]
+
+        self._v = v
+
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
+#        I = UpsilonWithHook
         I1 = self._PP['g'] ** b
         I2 = self._PP['g'] ** (self._MSK['lambda']*b)
         I3 = self._PP['g'] ** s
         I4 = self._PP['g'] ** rho1
 
         I5 = ( )
-        for i in range(0, len(rho)):
-            I5 = I5 + ( (self._PP['g'] ** (self._MSK['beta']*self._MSK['lambda'])*(i+1)) * (self.group.hash(rho[i], G1) ** (-rho1)), )
+        for i in range(0, 10):  # <<<<<<<<<<<<<<< !!!!!!!!!!!!!!
+            I5 = I5 + ( (self._PP['g^beta'] ** ap.lmbda(i,v)) * (self.group.hash(ap.p(i), G1) ** (-rho1)), )
+
 
         I6 = ( )
         for eta_j in eta:
@@ -229,13 +240,14 @@ class LSABE():
 # ................................................................................
     def serialize__CT(self, CT, ct_fname):
         (I, I1, I2, I3, I4, I5, I6, E, CM) = CT
+        (ctCT, ctIV) = CM
 
         l = SER(ct_fname, self.group)
-        l.p_val((I, I1, I2, I3, I4)).p_tup(I5).p_tup(I6).p_val((E,)).p_bytes(CM)
+        l.p_val((I, I1, I2, I3, I4)).p_tup(I5).p_tup(I6).p_val((E,)).p_bytes(ctCT).p_bytes(ctIV)
 
     def deserialize__CT(self, ct_fname):
         l = DES(ct_fname, self.group)
-        return (l.g_val(5) + (l.g_tup(), ) + (l.g_tup(), ) + l.g_val(1) + (l.g_bytes(),))
+        return (l.g_val(5) + (l.g_tup(), ) + (l.g_tup(), ) + l.g_val(1) + ((l.g_bytes(), ) + (l.g_bytes(), ) ,) )
 
 # ................................................................................
 # Trapdoor  (SK,KW′,PP) → TKW′.  
@@ -249,7 +261,7 @@ class LSABE():
 
         T1 = K1 ** u
         T2 = K2
-        lKW = self._1 * len(KW)                     # Make it ZR special value, not int
+        lKW = self._1 * len(KW)                     # Make it ZR* value otherwise lkW**(-1) makes little sense 
         T3 = (u * rho2) * (lKW**(-1))
         T4 = pair(self._PP['g'], self._PP['f']) ** u
         T5 = ( )
@@ -288,11 +300,11 @@ class LSABE():
         (I, I1, I2, I3, I4, I5, I6, E, CM) = CT
         (T1, T2, T3, T4, T5) = TKW
 
-        TJ = I6[0]*T5[0]
+        T5j = I6[0]*T5[0]
         for j in range(1, len(I6)):
-            TJ = TJ + I6[j]*T5[j]
+            T5j = T5j + I6[j]*T5[j]
 
-        return (T4 * pair(T1, (I1**T2) * I2) == E ** (T3 * TJ))
+        return (T4 * pair(T1, (I1**T2) * I2) == E ** (T3 * T5j))
 
 # ................................................................................
 # Transform (CT,TK) → CTout/⊥
@@ -304,3 +316,44 @@ class LSABE():
     def Transform(self, CT, TK):
         (I, I1, I2, I3, I4, I5, I6, E, CM) = CT
         (TK3, TK4, TK5) = TK
+
+        N = len(TK4)
+
+        ap = accessPolicy(10,10)
+
+        Iw  = self._1
+        TKw = self._1
+        w = 0
+        for i in range (N):
+            Iw  *= I5[i] ** ap.w(i)
+            TKw *= TK4[i] ** ap.w(i)
+            w = w+ap.w(i)*ap.lmbda(i,self._v)
+
+        TI = pair(TK5,I3)/pair(Iw, TK3)*pair(TKw, I4)
+
+        TI =  (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa'] * self._z)) * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['beta'] * self._z))
+        TI = TI/(pair(self._PP['g'], self._PP['g']) ** (self._MSK['beta'] * self._z * w))
+
+
+
+        return (I,CM,TI)    
+
+# ................................................................................
+#  Decrypt(z,CTout) → M.  
+#  The data user runs theDecryptalgorithm with its blind valuezand the partially 
+#  decrypted ciphertext CT out as input, and then the user can recover the message 
+#  M with lightweight decryption
+# ................................................................................
+
+    def Decrypt(self, z, CTout):
+
+        (I,CM,TI) = CTout
+
+        UpsilonWithHook = I/(TI**(self._1/z))
+        kse = extract_key(UpsilonWithHook)
+        a   = SymmetricCryptoAbstraction(kse)
+        M   = a.lsabe_decrypt(CM)
+
+        return M
+
+
