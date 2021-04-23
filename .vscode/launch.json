@@ -9,8 +9,8 @@
             "type": "python",
             "request": "launch",
             "module": "lsabe",
-//            "args":["--kwd", "searchable", "--search"]
-            "args":[ "--kwd", "good", "--search"]
+            "args":["--kwd", "searchable", "--search"]
+//            "args":[ "--kwd", "bad", "--search"]
                 // "protocol", "hello",
 //                    "--sec-attr", "foo", "--msg", "searchable encryption algorithm is good",
 //                    "--policy", "1", "2", 
@@ -21,11 +21,7 @@
 //            "args": ["--keygen",  "--sec-attr", "attr-1", "attr-2"]
 //           "args": ["--keygen", "--sec-attr"]
 //           "args": ["--keygen"]
-//           "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--policy", "1", "2", "3"]
-//            "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--kwd", "searchable", "encryption", "algorithm"]
-//           "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--kwd", "searchable", "encryption", "algorithm",
- //                    "--policy", "1", "2", "3", "101", "102", "103"]
-//            "args":["--trapgen", "--kwd", "searchable", "encryption", "algorithm"]
+//           "args":[ "--encrypt", "--msg", "searchable encryption algorithm is good", "--kwd", "searchable", "encryption", "algorithm"]
 }
     ]
 }

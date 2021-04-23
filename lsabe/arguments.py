@@ -4,7 +4,7 @@ import argparse
 import pathlib
 
 
-def arguments_setup():
+def arguments_setup(max_kwd):
     default_key_path = pathlib.Path(__file__).parent.parent.joinpath('keys')
     default_data_path = pathlib.Path(__file__).parent.parent.joinpath('data')
 
@@ -66,20 +66,13 @@ def arguments_setup():
                                         'At this sytem it will default to ' + str(default_data_path)
     )
 
-    parser.add_argument('--sec-attr',  
-                        nargs      =   '+',     
-                        dest        =   'sec_attr',
-                        metavar     =   '<security attribute>',
-                        default     =   ["full access"],
-                        help        =   'Security attribute. Multiply attributes are supported, e.g.: --sec-attr foo bar foobar' 
-    )
-
     parser.add_argument('--kwd',  
                         nargs       =   '+',     
                         dest        =   'keywords',
                         metavar     =   '<keywords>',
                         default     =   [],
-                        help        =   'Keyword. Multiply keywords are supported, e.g.: --kwd searchable encryption algorithm' 
+                        help        =   'Keyword. Multiply keywords are supported, e.g.: --kwd searchable encryption algorithm. Maximun number of keywords is statically set to ' + str(max_kwd) +
+                                        ' If you want to change it, please modify MAX_KEYWORDS value in the source code.'
     )
 
     parser.add_argument('--msg',  

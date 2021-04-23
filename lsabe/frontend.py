@@ -15,7 +15,8 @@ def farewell():
 
 def startup():
 
-    parser = arguments_setup()
+    MAX_KEYWORDS = 10
+    parser = arguments_setup(MAX_KEYWORDS)
     args = parser.parse_args()
 
     if (not args.init_flag and not args.keygen_flag and not args.encrypt_flag and not args.search_flag):
@@ -25,7 +26,7 @@ def startup():
     key_path = args.key_path
     dir_create(key_path)
 
-    lsabe = LSABE(key_path, 10)
+    lsabe = LSABE(key_path, MAX_KEYWORDS)
 
 # MSK and PP are requied always
 # So we either generate them (SystemInit) or load from files (SystemLoad)
@@ -49,22 +50,8 @@ def startup():
 # SK and TK generation
     if (args.keygen_flag):
         print('Executing "SecretKeyGen(MSK,S,PP) → SK" ...')
-        if len(args.sec_attr) == 0:
-            print(  '''--keygen flag is set but no security attributes are supplied.
-                    Secret key generation algorithm is defined as SecretKeyGen(MSK,S,PP) → SK, where S is a set of security attributes.
-                    
-                    Security attribute is an abstraction representing the basic properties or characteristics of an entity with respect 
-                    to safeguarding information; typically associated with internal data structures (e.g., records, buffers, files) within 
-                    the information system which are used to enable the implementation of access control and flow control policies; 
-                    reflect special dissemination, handling, or distribution instructions; or support other aspects of the information 
-                    security policy. [NIST SP 800-53 Rev. 4]
-                    
-                    Please provide at least one attribute. --sec-attr "full access" will be good enouph'''
-                )
-            farewell()
-        print('Security attributes: ' + str(args.sec_attr))    
         sk_fname = key_path.joinpath('lsabe.sk')   
-        SK = lsabe.SecretKeyGen(args.sec_attr)
+        SK = lsabe.SecretKeyGen()
         try:
             lsabe.serialize__SK(SK, sk_fname)
         except:
@@ -72,18 +59,24 @@ def startup():
             farewell()
         print('SK saved to ' + str(sk_fname))
 
+    if (args.encrypt_flag or args.search_flag) and len(args.keywords) > MAX_KEYWORDS:
+        print(str(len(args.keywords)) + ' keywords are provided. The maximum supported number of keywords is ' + str(MAX_KEYWORDS) + 
+              ' If you want to change it, please modify MAX_KEYWORDS value in the source code') 
+        farewell()
+
 # Encrypt (file encryption and index generation)
     if (args.encrypt_flag):
         data_path = args.data_path
         dir_create(data_path)
 
         print('Executing "Encrypt(M,KW,(A,ρ),PP) → CT" ...')
-        l1 = len(args.keywords)
-        if l1 == 0:
+        
+        if len(args.keywords) == 0:
             print('--encrypt flag is set but no keywords are supplied.\n'
                     'Encryption algorithm is defined as Encrypt(M,KW,(A,ρ),PP) → CT, where KW is a set of keywords.\n'
                     'Please provide at least one keyword. --kwd keyword will be good enouph')
             farewell()
+
         if args.message is None or not args.message:
             print('--encrypt flag is set but no message to encrypt is supplied.\n'
                     'Encryption algorithm is defined as Encrypt(M,KW,(A,ρ),PP) → CT, where M is a message to encrypt.\n'
@@ -114,7 +107,6 @@ def startup():
 
 # Search (trapdoor generation, search, transformation, decription)
     if (args.search_flag):
-
         if len(args.keywords) == 0:
             print('--search flag is set but no keywords are supplied.\n'
                     'Please provide at least one keyword. --kwd keyword will be good enouph')

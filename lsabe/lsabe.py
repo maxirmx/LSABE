@@ -21,7 +21,10 @@ class LSABE():
 
 # 1 in ZR (a kind of ugly but I cannot think of better method)
         x = self.group.random(ZR) 
-        self._1 = x/x                 
+        self._1 = x/x          
+
+# Access policy
+        self._ap = accessPolicy()       
 
     @property
     def msk_fname(self):
@@ -100,15 +103,17 @@ class LSABE():
 # SecretKeyGen(MSK,S,PP)→SK.   
 # Given the dataowner’s attribute sets, key generation center (KGC) conducts
 # the SecrekeyGen algorithm and outputs the secret key SK.    
+# For simplicity security attributes are implemented within python class accessPolicy 
+# and not passed as a parameter
 # ................................................................................
-    def SecretKeyGen(self, S):
+    def SecretKeyGen(self):
         t, delta = self.group.random(ZR), self.group.random(ZR)
 
         K1 = self._PP['g'] ** (self._MSK['alfa']/(self._MSK['lambda'] + delta))
         K2 = delta
         K3 = self._PP['g'] ** t
         K4 = ()
-        for s in S:
+        for s in self._ap.S:
             K4 = K4 +(self.group.hash(s, G1) ** t,)
 
         K5 = (self._PP['g'] ** self._MSK['alfa']) * (self._PP['g'] ** (self._MSK['beta'] * t))
@@ -136,7 +141,6 @@ class LSABE():
 # ................................................................................
     def z(self):
         z = self.group.random(ZR)
-        #self._z = z   # TOREMOVE
         return z
 
 # ................................................................................
@@ -199,8 +203,7 @@ class LSABE():
 
         rho1, b = self.group.random(ZR), self.group.random(ZR)
         
-        ap = accessPolicy(10,10)
-        v = ap.randVector()
+        v = self._ap.randVector()
         s = v[0]
 
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
@@ -210,8 +213,8 @@ class LSABE():
         I4 = self._PP['g'] ** rho1
 
         I5 = ( )
-        for i in range(0, 10):  # <<<<<<<<<<<<<<< !!!!!!!!!!!!!!
-            I5 = I5 + ( (self._PP['g^beta'] ** ap.lmbda(i,v)) * (self.group.hash(ap.p(i), G1) ** rho1), )
+        for i in range(0, self._ap.l):  
+            I5 = I5 + ( (self._PP['g^beta'] ** self._ap.lmbda(i,v)) * (self.group.hash(self._ap.p(i), G1) ** rho1), )
 # ........................................................................ The article says:  ** -rho1          
 # ........................................................................ but it is definetely a mistake 
 
@@ -310,14 +313,12 @@ class LSABE():
 
         N = len(TK4)
 
-        ap = accessPolicy(10,10)
-
         Iw  = self._1
         TKw = self._1
 
         for i in range (N):
-            Iw  = Iw * (I5[i] ** ap.w(i))
-            TKw = TKw * (TK4[i] ** ap.w(i))
+            Iw  = Iw * (I5[i] ** self._ap.w(i))
+            TKw = TKw * (TK4[i] ** self._ap.w(i))
 
         TI = pair(TK5,I3)/pair(Iw, TK3)*pair(TKw, I4)
 
