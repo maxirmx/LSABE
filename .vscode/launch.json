@@ -10,7 +10,7 @@
             "request": "launch",
             "module": "lsabe",
 //            "args":["--kwd", "searchable", "--search"]
-            "args":[ "--encrypt", "--kwd", "good", "things", "--msg", "good things happen", "--search"]
+            "args":[ "--kwd", "good", "--search"]
                 // "protocol", "hello",
 //                    "--sec-attr", "foo", "--msg", "searchable encryption algorithm is good",
 //                    "--policy", "1", "2", 

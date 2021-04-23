@@ -109,7 +109,6 @@ class LSABE():
         K3 = self._PP['g'] ** t
         K4 = ()
         for s in S:
-#            K4 = K4 +(self.group.hash(s, G1) ** t,)
             K4 = K4 +(self.group.hash(s, G1) ** t,)
 
         K5 = (self._PP['g'] ** self._MSK['alfa']) * (self._PP['g'] ** (self._MSK['beta'] * t))
@@ -117,7 +116,6 @@ class LSABE():
 #        print ("Secret key:")
 #        print ((K1, K2, K3, K4, K5))
 
-        #self._t = t  # TOREMOVE
         return (K1, K2, K3, K4, K5) 
 
 # ................................................................................
@@ -171,7 +169,6 @@ class LSABE():
         l = DES(tk_fname, self.group)
         return l.g_val(1) + (l.g_tup(), ) + l.g_val(1) 
 
-
 # ................................................................................
 # Encrypt (M,KW,(A,ρ),PP)→CT.  
 # Given keyword set KW extracted from file M and the access policy(A,ρ), data owner 
@@ -206,18 +203,17 @@ class LSABE():
         v = ap.randVector()
         s = v[0]
 
-        #self._v = v                 # TOREMOVE
-
         I = UpsilonWithHook * (pair(self._PP['g'], self._PP['g']) ** (self._MSK['alfa']*s))
         I1 = self._PP['g'] ** b
         I2 = self._PP['g'] ** (self._MSK['lambda']*b)
         I3 = self._PP['g'] ** s
-        I4 = self._PP['g'] #** rho1
+        I4 = self._PP['g'] ** rho1
 
         I5 = ( )
         for i in range(0, 10):  # <<<<<<<<<<<<<<< !!!!!!!!!!!!!!
-#            I5 = I5 + ( (self._PP['g^beta'] ** ap.lmbda(i,v)) * (self.group.hash(ap.p(i), G1) ** (rho1 * (-1))), )
-            I5 = I5 + ( (self._PP['g^beta'] ** ap.lmbda(i,v)) * (self.group.hash(ap.p(i), G1) ), )
+            I5 = I5 + ( (self._PP['g^beta'] ** ap.lmbda(i,v)) * (self.group.hash(ap.p(i), G1) ** rho1), )
+# ........................................................................ The article says:  ** -rho1          
+# ........................................................................ but it is definetely a mistake 
 
         I6 = ( )
         for eta_j in eta:
@@ -318,15 +314,12 @@ class LSABE():
 
         Iw  = self._1
         TKw = self._1
-        w = 0
+
         for i in range (N):
             Iw  = Iw * (I5[i] ** ap.w(i))
             TKw = TKw * (TK4[i] ** ap.w(i))
 
         TI = pair(TK5,I3)/pair(Iw, TK3)*pair(TKw, I4)
-
-    #    TI =  (pair(self._PP['g'], self._PP['g']) ** (self._v[0] * self._MSK['alfa'] * self._z)) * (pair(self._PP['g'], self._PP['g']) ** (self._v[0] * self._MSK['beta'] * self._t * self._z))
-    #    TI = TI/(pair(self._PP['g'], self._PP['g']) ** (self._MSK['beta'] * self._t * self._z * w))
 
         return (I,CM,TI)    
 

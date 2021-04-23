@@ -5,13 +5,19 @@ import random
 
 #
 #  Let A be an n × l matrix and p be the function that associates rows of A with the (security?) attributes.
-#  The  access  policy  is  denoted  by (A,p). 
+#  The access policy is denoted by (A,p). 
 
 class accessPolicy:
     def __init__(self, n, l):
         self._n = n                     # The number of columns
         self._l = l                     # The number of rows
-
+        self.__S = [
+            "Security attribute #0",
+            "Security attribute #1",
+            "Security attribute #2",
+            "Security attribute #3",
+            "Security attribute #4"
+        ]
 
 #  For testing simplicty I assume that A(i,0) = 1, A(i,j)=0 if j!=0 for any i
 #  So no matrix is stored, I just generate a value as required 
@@ -22,9 +28,9 @@ class accessPolicy:
         return 0
 
 # p - the function that associates rows of A with the (security?) attributes
-# i - index of security attribute, we return it as a row of A
+# i - row of A, we return associated security attribute which is always "full access" 
     def p(self,i):
-        return "full access" #i
+        return "full access" 
 
 # A helper for lsabe.encrypt
 # Choose a random s∈Zp and a random vector v∈Znp with s as its first entry.
