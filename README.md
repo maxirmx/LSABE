@@ -1,5 +1,6 @@
 # LSABE
 
+```
 usage: lsabe [-h] [--init] [--key-path <path>] [--keygen] [--encrypt]
              [--search] [--data-path <path>]
              [--kwd <keywords> [<keywords> ...]] [--msg <message>]
@@ -25,7 +26,8 @@ Suggested initial test call sequence:
            python -m lsabe --encrypt --msg "This is unrelated message" --kwd unrelated message
            python -m lsabe --search --kwd Searchable
            python -m lsabe --search --kwd ENCRYPTION
-
+```
+```
 maxirmx@MSS-WS-N:~/LSABE$ python -m lsabe --init
   Executing "Setup(κ) → (MSK,PP)" ...
   MSK and PP saved to /home/maxirmx/LSABE/keys/lsabe.msk and /home/maxirmx/LSABE/keys/lsabe.pp
@@ -68,3 +70,4 @@ maxirmx@MSS-WS-N:~/LSABE$ python -m lsabe --search --kwd ENCRYPTION
   ===== bbQldVTH.ciphertext =====
   Executing "Search(CT,TD) → True/False" ...
   Search algoritm returned "False"
+```
