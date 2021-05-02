@@ -146,7 +146,7 @@ class LSABE():
 # ................................................................................
 # TransKeyGen(SK, z) → TK.   
 # Transformation key generation(TransKeyGen):
-# # ................................................................................
+# ................................................................................
     
     def TransKeyGen(self, SK, z):
         (K1, K2, K3, K4, K5) = SK
@@ -162,7 +162,7 @@ class LSABE():
         return (TK3, TK4, TK5)
 
 # ................................................................................
-#  SK serializer and deserializer
+#  TK serializer and deserializer
 # ................................................................................
     def serialize__TK(self, TK, tk_fname):
         (K3T, K4T, K5T) = TK
@@ -326,7 +326,7 @@ class LSABE():
 
 # ................................................................................
 #  Decrypt(z,CTout) → M.  
-#  The data user runs theDecryptalgorithm with its blind valuezand the partially 
+#  The data user runs the Decrypt algorithm with its blind value z and the partially 
 #  decrypted ciphertext CT out as input, and then the user can recover the message 
 #  M with lightweight decryption
 # ................................................................................
