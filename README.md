@@ -1,4 +1,7 @@
-# LSABE
+# Lightweight Searchable Encryption Protocol for Industrial Internet of Things
+
+This is an impleentation of LSABE protocol as described in https://ieeexplore.ieee.org/document/9158514.
+The article has 2 bugs in formulas and one feature that is principal contradiction with the mainline of the algorithm offered so I had to fix it.
 
 ```
 usage: lsabe [-h] [--init] [--key-path <path>] [--keygen] [--encrypt]
